@@ -2,69 +2,93 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Order Test</title>
+<title>MT Factory Orders</title>
 
 <style>
-body { font-family: Arial; background:#f5f5f5; padding:20px; direction:rtl }
-.box { background:#fff; padding:20px; border-radius:8px }
-input, button { width:100%; padding:10px; margin-bottom:10px }
-button { background:#0b3c88; color:#fff; border:none }
-.order { border-bottom:1px solid #ddd; padding:10px 0 }
+body{font-family:Arial;background:#f4f6f8;direction:rtl;padding:20px}
+.box{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px}
+input,select,button{width:100%;padding:10px;margin-bottom:10px}
+button{background:#0b3c88;color:#fff;border:none}
+.order{border-bottom:1px solid #ddd;padding:10px}
+.small{color:#666;font-size:14px}
 </style>
 </head>
 
 <body>
 
 <div class="box">
-  <h3>إضافة أوردر (اختبار)</h3>
+<h3>إضافة أوردر</h3>
 
-  <input id="name" placeholder="اسم العميل">
-  <input id="price" placeholder="السعر">
+<input id="customer" placeholder="اسم العميل">
+<input id="phone" placeholder="رقم الموبايل">
+<input id="total" placeholder="إجمالي السعر">
+<input id="cost" placeholder="التكلفة">
 
-  <button id="btn">إضافة</button>
+<button onclick="addOrder()">إضافة</button>
 </div>
 
 <div class="box">
-  <h3>الأوردرات</h3>
-  <div id="orders"></div>
+<h3>الأوردرات</h3>
+<div id="orders"></div>
 </div>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
-const nameInput = document.getElementById("name");
-const priceInput = document.getElementById("price");
+const firebaseConfig = {
+  apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
+  authDomain: "mt-factory.firebaseapp.com",
+  projectId: "mt-factory",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 const ordersDiv = document.getElementById("orders");
-const btn = document.getElementById("btn");
 
-let orders = [];
+async function addOrder(){
+  const customer = document.getElementById("customer").value;
+  const phone = document.getElementById("phone").value;
+  const total = Number(document.getElementById("total").value);
+  const cost = Number(document.getElementById("cost").value);
 
-btn.addEventListener("click", () => {
-  if (!nameInput.value || !priceInput.value) {
-    alert("اكتب البيانات");
-    return;
-  }
+  if(!customer || !total){ alert("كمل البيانات"); return; }
 
-  orders.push({
-    name: nameInput.value,
-    price: priceInput.value
+  const snap = await db.collection("orders").get();
+  const orderId = "ORD-" + String(snap.size + 1).padStart(4,"0");
+
+  await db.collection("orders").add({
+    orderId,
+    customer,
+    phone,
+    total,
+    cost,
+    profit: total - cost,
+    date: new Date()
   });
 
-  nameInput.value = "";
-  priceInput.value = "";
+  document.querySelectorAll("input").forEach(i=>i.value="");
+}
 
-  render();
-});
-
-function render() {
-  ordersDiv.innerHTML = "";
-  orders.forEach(o => {
+db.collection("orders").orderBy("date","desc")
+.onSnapshot(snap=>{
+  ordersDiv.innerHTML="";
+  snap.forEach(doc=>{
+    const o = doc.data();
     ordersDiv.innerHTML += `
       <div class="order">
-        ${o.name} - ${o.price}
+        <b>${o.orderId}</b><br>
+        ${o.customer} - ${o.phone}<br>
+        إجمالي: ${o.total} | تكلفة: ${o.cost}<br>
+        <b>ربح: ${o.profit}</b>
       </div>
     `;
   });
-}
+});
 </script>
 
 </body>
 </html>
+
