@@ -56,135 +56,30 @@ button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointe
 </div>
 
 </div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
-  authDomain: "mt-factory.firebaseapp.com",
-  projectId: "mt-factory",
-  storageBucket: "mt-factory.appspot.com",
-  messagingSenderId: "462981501394",
-  appId: "1:462981501394:web:d9f1736711d3990220380b"
-};
-console.log("🔥 Firebase Connected");
+  const firebaseConfig = {
+    apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
+    authDomain: "mt-factory.firebaseapp.com",
+    projectId: "mt-factory",
+    storageBucket: "mt-factory.appspot.com",
+    messagingSenderId: "462981501394",
+    appId: "1:462981501394:web:d9f1736711d3990220380b"
+  };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-const PASSWORD="factory123";
-let orders=JSON.parse(localStorage.getItem("factory_orders")||"[]");
-let editId=null;
+  console.log("🔥 Firebase Connected");
 
-function login(){
- if(loginPass.value===PASSWORD){
-  loginBox.classList.add("hidden");
-  system.classList.remove("hidden");
-  render();
- }else alert("باسورد غلط");
-}
-
-function saveOrder(){
- if(!customer.value||!phone.value||!total.value){alert("كمل البيانات");return;}
- if(editId){
-  const o=orders.find(x=>x.id===editId);
-  Object.assign(o,getData());
-  editId=null;
- }else{
-  orders.push({...getData(),id:Date.now()});
- }
- clearForm();
- render();
-}
-
-function getData(){
- return{
-  customer:customer.value,
-  phone:phone.value,
-  total:+total.value,
-  paid:+paid.value||0,
-  status:status.value,
-  delivery:delivery.value
- };
-}
-
-function clearForm(){
- customer.value=phone.value=total.value=paid.value=delivery.value="";
-}
-
-function editOrder(id){
- const o=orders.find(x=>x.id===id);
- customer.value=o.customer;
- phone.value=o.phone;
- total.value=o.total;
- paid.value=o.paid;
- status.value=o.status;
- delivery.value=o.delivery;
- editId=id;
-}
-
-function delOrder(id){
- if(confirm("متأكد؟")){
-  orders=orders.filter(o=>o.id!==id);
-  render();
- }
-}
-
-function invoice(o,lang){
- const w=window.open("");
- w.document.write(`
- <h2>MT FACTORY</h2>
- <p>${lang==="en"?"Invoice":"فاتورة"}</p>
- <p>${lang==="en"?"Customer":"العميل"}: ${o.customer}</p>
- <p>Phone: ${o.phone}</p>
- <p>Total: ${o.total}</p>
- <p>Paid: ${o.paid}</p>
- <p>Remain: ${o.total-o.paid}</p>
- <p>Delivery: ${o.delivery||"-"}</p>
- <p>📞 01044067766</p>
- <script>window.print()<\/script>
- `);
-}
-
-function render(){
- const c=document.getElementById("orders");
- c.innerHTML="";
- let sT=0,sP=0;
-
- orders.forEach(o=>{
-  sT+=o.total; sP+=o.paid;
-
-  const d=document.createElement("div");
-  d.className="order";
-  d.innerHTML=`
-  <b>${o.customer}</b> - ${o.phone}<br>
-  ${o.total} / ${o.paid} - ${o.status}<br>
-  `;
-  const a=document.createElement("div");
-  a.className="actions";
-
-  [["✏️",()=>editOrder(o.id)],
-   ["🗑️",()=>delOrder(o.id)],
-   ["عربي",()=>invoice(o,"ar")],
-   ["EN",()=>invoice(o,"en")]]
-   .forEach(b=>{
-    const btn=document.createElement("button");
-    btn.textContent=b[0];
-    btn.onclick=b[1];
-    a.appendChild(btn);
-   });
-
-  d.appendChild(a);
-  c.appendChild(d);
- });
-
- sumTotal.textContent=sT;
- sumPaid.textContent=sP;
- localStorage.setItem("factory_orders",JSON.stringify(orders));
-}
+  const PASSWORD = "factory123";
+  let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
+  let editId = null;
 </script>
-
-</body>
-</html>
