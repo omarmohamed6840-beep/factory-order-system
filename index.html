@@ -1,177 +1,69 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>MT FACTORY – Order System</title>
+<meta charset="UTF-8">
+<title>Order Test</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      padding: 20px;
-      direction: rtl;
-    }
-    .box {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 15px;
-    }
-    button {
-      background: #0b3c88;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-    .order {
-      border-bottom: 1px solid #ddd;
-      padding: 10px 0;
-    }
-  </style>
+<style>
+body { font-family: Arial; background:#f5f5f5; padding:20px; direction:rtl }
+.box { background:#fff; padding:20px; border-radius:8px }
+input, button { width:100%; padding:10px; margin-bottom:10px }
+button { background:#0b3c88; color:#fff; border:none }
+.order { border-bottom:1px solid #ddd; padding:10px 0 }
+</style>
 </head>
 
 <body>
 
-<h2>MT FACTORY – Order System</h2>
-
 <div class="box">
-  <h3>إضافة أوردر</h3>
+  <h3>إضافة أوردر (اختبار)</h3>
 
-  <input id="customer" placeholder="اسم العميل">
-  <input id="phone" placeholder="رقم الموبايل">
-  <input id="total" placeholder="سعر البيع">
-  <input id="cost" placeholder="التكلفة">
-  <input id="paid" placeholder="المدفوع">
+  <input id="name" placeholder="اسم العميل">
+  <input id="price" placeholder="السعر">
 
-  <select id="status">
-    <option value="قيد التنفيذ">قيد التنفيذ</option>
-    <option value="تم التسليم">تم التسليم</option>
-  </select>
-
-  <button id="addBtn">إضافة</button>
+  <button id="btn">إضافة</button>
 </div>
 
 <div class="box">
   <h3>الأوردرات</h3>
-
-  <input id="search" placeholder="بحث بـ Order ID أو الاسم أو الموبايل">
-
   <div id="orders"></div>
-
-  <h4>إجمالي الأرباح: <span id="profit">0</span> جنيه</h4>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
-  /* ===== Firebase ===== */
-  const firebaseConfig = {
-    apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
-    authDomain: "mt-factory.firebaseapp.com",
-    projectId: "mt-factory",
-    storageBucket: "mt-factory.appspot.com",
-    messagingSenderId: "462981501394",
-    appId: "1:462981501394:web:d9f1736711d3990220380b"
-  };
+const nameInput = document.getElementById("name");
+const priceInput = document.getElementById("price");
+const ordersDiv = document.getElementById("orders");
+const btn = document.getElementById("btn");
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  console.log("🔥 Firebase Connected");
+let orders = [];
 
-  /* ===== Elements ===== */
-  const customer = document.getElementById("customer");
-  const phone = document.getElementById("phone");
-  const total = document.getElementById("total");
-  const cost = document.getElementById("cost");
-  const paid = document.getElementById("paid");
-  const status = document.getElementById("status");
-  const ordersDiv = document.getElementById("orders");
-  const profitSpan = document.getElementById("profit");
-  const searchInput = document.getElementById("search");
-  const addBtn = document.getElementById("addBtn");
-
-  /* ===== Data ===== */
-  let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
-
-  /* ===== Order ID ===== */
-  function generateOrderId() {
-    let last = Number(localStorage.getItem("last_order_number") || 0) + 1;
-    localStorage.setItem("last_order_number", last);
-    return "ORD-" + String(last).padStart(4, "0");
+btn.addEventListener("click", () => {
+  if (!nameInput.value || !priceInput.value) {
+    alert("اكتب البيانات");
+    return;
   }
 
-  /* ===== Add Order ===== */
-  function addOrder() {
-    if (!customer.value || !phone.value || !total.value || !cost.value) {
-      alert("كمّل كل البيانات");
-      return;
-    }
+  orders.push({
+    name: nameInput.value,
+    price: priceInput.value
+  });
 
-    const order = {
-      id: generateOrderId(),
-      customer: customer.value,
-      phone: phone.value,
-      total: Number(total.value),
-      cost: Number(cost.value),
-      paid: Number(paid.value || 0),
-      status: status.value,
-      date: new Date().toISOString()
-    };
+  nameInput.value = "";
+  priceInput.value = "";
 
-    orders.push(order);
-    localStorage.setItem("factory_orders", JSON.stringify(orders));
-    db.collection("orders").doc(order.id).set(order);
-
-    customer.value = "";
-    phone.value = "";
-    total.value = "";
-    cost.value = "";
-    paid.value = "";
-
-    render();
-  }
-
-  addBtn.addEventListener("click", addOrder);
-
-  /* ===== Render + Search ===== */
-  function render() {
-    ordersDiv.innerHTML = "";
-    let profit = 0;
-    let q = searchInput.value.toLowerCase();
-
-    orders
-      .filter(o =>
-        o.id.toLowerCase().includes(q) ||
-        o.customer.toLowerCase().includes(q) ||
-        o.phone.includes(q)
-      )
-      .forEach(o => {
-        let p = o.total - o.cost;
-        profit += p;
-
-        ordersDiv.innerHTML += `
-          <div class="order">
-            <b>${o.id}</b> – ${o.customer}<br>
-            ${o.phone}<br>
-            بيع: ${o.total} | تكلفة: ${o.cost} | ربح: ${p}
-          </div>
-        `;
-      });
-
-    profitSpan.innerText = profit;
-  }
-
-  searchInput.addEventListener("input", render);
   render();
+});
+
+function render() {
+  ordersDiv.innerHTML = "";
+  orders.forEach(o => {
+    ordersDiv.innerHTML += `
+      <div class="order">
+        ${o.name} - ${o.price}
+      </div>
+    `;
+  });
+}
 </script>
 
 </body>
