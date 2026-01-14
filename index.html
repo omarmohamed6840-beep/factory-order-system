@@ -2,8 +2,8 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>MT FACTORY – Order System</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT FACTORY Order System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{font-family:Arial;direction:rtl;background:#f2f6fb;margin:0;padding:20px;color:#0b3a7e}
 h1{text-align:center}
@@ -11,7 +11,7 @@ h1{text-align:center}
 input,select,button{width:100%;padding:10px;margin-bottom:10px}
 button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointer}
 .order{border-bottom:1px solid #ddd;padding:10px 0}
-.actions button{width:auto;margin-left:5px}
+.actions button{width:auto;margin:3px}
 .hidden{display:none}
 .report{display:flex;justify-content:space-between}
 </style>
@@ -19,14 +19,12 @@ button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointe
 
 <body>
 
-<!-- LOGIN -->
 <div id="loginBox" class="box">
-  <h2>تسجيل الدخول</h2>
-  <input id="loginPass" type="password" placeholder="الباسورد">
-  <button onclick="login()">دخول</button>
+<h2>تسجيل الدخول</h2>
+<input id="loginPass" type="password" placeholder="الباسورد">
+<button onclick="login()">دخول</button>
 </div>
 
-<!-- SYSTEM -->
 <div id="system" class="hidden">
 
 <h1>MT FACTORY<br>Order System</h1>
@@ -39,17 +37,17 @@ button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointe
 <input id="paid" placeholder="المدفوع">
 <input id="delivery" type="date">
 <select id="status">
-  <option>قيد التنفيذ</option>
-  <option>في انتظار العميل</option>
-  <option>جاهز</option>
-  <option>تم التسليم</option>
+<option>قيد التنفيذ</option>
+<option>في انتظار العميل</option>
+<option>جاهز</option>
+<option>تم التسليم</option>
 </select>
 <button onclick="saveOrder()">حفظ</button>
 </div>
 
 <div class="box report">
-  <div>إجمالي المبيعات: <strong id="sumTotal">0</strong></div>
-  <div>المدفوع: <strong id="sumPaid">0</strong></div>
+<div>إجمالي: <b id="sumTotal">0</b></div>
+<div>مدفوع: <b id="sumPaid">0</b></div>
 </div>
 
 <div class="box">
@@ -79,7 +77,7 @@ function saveOrder(){
   Object.assign(o,getData());
   editId=null;
  }else{
-  orders.push({...getData(),id:Date.now(),date:new Date().toLocaleDateString()});
+  orders.push({...getData(),id:Date.now()});
  }
  clearForm();
  render();
@@ -102,7 +100,7 @@ function clearForm(){
 
 function editOrder(id){
  const o=orders.find(x=>x.id===id);
- Object.assign(customer,o);
+ customer.value=o.customer;
  phone.value=o.phone;
  total.value=o.total;
  paid.value=o.paid;
@@ -112,27 +110,25 @@ function editOrder(id){
 }
 
 function delOrder(id){
- if(confirm("متأكد من الحذف؟")){
+ if(confirm("متأكد؟")){
   orders=orders.filter(o=>o.id!==id);
   render();
  }
 }
 
 function invoice(o,lang){
- const t=lang==="en"?
- `Invoice<br>Customer: ${o.customer}`:
- `فاتورة<br>العميل: ${o.customer}`;
  const w=window.open("");
  w.document.write(`
  <h2>MT FACTORY</h2>
- <p>${t}</p>
- <p>الهاتف: ${o.phone}</p>
- <p>الإجمالي: ${o.total}</p>
- <p>المدفوع: ${o.paid}</p>
- <p>المتبقي: ${o.total-o.paid}</p>
- <p>تاريخ التسليم: ${o.delivery||"-"}</p>
+ <p>${lang==="en"?"Invoice":"فاتورة"}</p>
+ <p>${lang==="en"?"Customer":"العميل"}: ${o.customer}</p>
+ <p>Phone: ${o.phone}</p>
+ <p>Total: ${o.total}</p>
+ <p>Paid: ${o.paid}</p>
+ <p>Remain: ${o.total-o.paid}</p>
+ <p>Delivery: ${o.delivery||"-"}</p>
  <p>📞 01044067766</p>
- <script>window.print()</script>
+ <script>window.print()<\/script>
  `);
 }
 
@@ -140,22 +136,36 @@ function render(){
  const c=document.getElementById("orders");
  c.innerHTML="";
  let sT=0,sP=0;
+
  orders.forEach(o=>{
-  sT+=o.total;sP+=o.paid;
-  c.innerHTML+=`
-  <div class="order">
-   <strong>${o.customer}</strong> – ${o.phone}<br>
-   ${o.total} / ${o.paid} – ${o.status}<br>
-   <div class="actions">
-    <button onclick="editOrder(${o.id})">✏️</button>
-    <button onclick="delOrder(${o.id})">🗑️</button>
-    <button onclick="invoice(${JSON.stringify(o)},'ar')">🧾 عربي</button>
-    <button onclick="invoice(${JSON.stringify(o)},'en')">🧾 EN</button>
-   </div>
-  </div>`;
+  sT+=o.total; sP+=o.paid;
+
+  const d=document.createElement("div");
+  d.className="order";
+  d.innerHTML=`
+  <b>${o.customer}</b> - ${o.phone}<br>
+  ${o.total} / ${o.paid} - ${o.status}<br>
+  `;
+  const a=document.createElement("div");
+  a.className="actions";
+
+  [["✏️",()=>editOrder(o.id)],
+   ["🗑️",()=>delOrder(o.id)],
+   ["عربي",()=>invoice(o,"ar")],
+   ["EN",()=>invoice(o,"en")]]
+   .forEach(b=>{
+    const btn=document.createElement("button");
+    btn.textContent=b[0];
+    btn.onclick=b[1];
+    a.appendChild(btn);
+   });
+
+  d.appendChild(a);
+  c.appendChild(d);
  });
- sumTotal.innerText=sT;
- sumPaid.innerText=sP;
+
+ sumTotal.textContent=sT;
+ sumPaid.textContent=sP;
  localStorage.setItem("factory_orders",JSON.stringify(orders));
 }
 </script>
