@@ -108,7 +108,7 @@
       return "ORD-" + String(last).padStart(4, "0");
     }
 
-function addOrder() {
+function addOrder() 
   if (!customer.value || !phone.value || !total.value || !cost.value) {
     alert("من فضلك كمل كل البيانات (الاسم – الموبايل – السعر – التكلفة)");
     return;
@@ -123,7 +123,7 @@ function addOrder() {
     paid: Number(paid.value || 0),
     status: status.value,
     date: new Date().toISOString()
-  };
+  ;
 
   // حفظ محلي
   orders.push(order);
@@ -143,10 +143,14 @@ function addOrder() {
 }
 
 function render() {
-const q = (searchInput?.value || "").toLowerCase();
+function render() {
+  ordersDiv.innerHTML = "";
   let profit = 0;
 
-  const q = searchInput.value.toLowerCase();
+  let q = "";
+  if (searchInput) {
+    q = searchInput.value.toLowerCase();
+  }
 
   orders
     .filter(o =>
@@ -169,9 +173,6 @@ const q = (searchInput?.value || "").toLowerCase();
 
   profitSpan.innerText = profit;
 }
-
-   render();
-searchInput.addEventListener("input", render);
 
   </script>
 
