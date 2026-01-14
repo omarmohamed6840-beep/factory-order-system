@@ -1,81 +1,148 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>MT FACTORY Order System</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{font-family:Arial;direction:rtl;background:#f2f6fb;margin:0;padding:20px;color:#0b3a7e}
-h1{text-align:center}
-.box{background:#fff;padding:15px;border-radius:10px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-input,select,button{width:100%;padding:10px;margin-bottom:10px}
-button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointer}
-.order{border-bottom:1px solid #ddd;padding:10px 0}
-.actions button{width:auto;margin:3px}
-.hidden{display:none}
-.report{display:flex;justify-content:space-between}
-</style>
+  <meta charset="UTF-8" />
+  <title>MT FACTORY – Order System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      padding: 20px;
+      direction: rtl;
+    }
+    .box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+    button {
+      background: #0b3c88;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .order {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+  </style>
 </head>
 
 <body>
 
-<div id="loginBox" class="box">
-<h2>تسجيل الدخول</h2>
-<input id="loginPass" type="password" placeholder="الباسورد">
-<button onclick="login()">دخول</button>
-</div>
+  <h2>MT FACTORY – Order System</h2>
 
-<div id="system" class="hidden">
+  <div class="box">
+    <h3>إضافة أوردر</h3>
 
-<h1>MT FACTORY<br>Order System</h1>
+    <input id="customer" placeholder="اسم العميل">
+    <input id="phone" placeholder="رقم الموبايل">
+    <input id="total" placeholder="سعر البيع">
+    <input id="cost" placeholder="التكلفة">
+    <input id="paid" placeholder="المدفوع">
 
-<div class="box">
-<h3>إضافة / تعديل أوردر</h3>
-<input id="customer" placeholder="اسم العميل">
-<input id="phone" placeholder="رقم الموبايل">
-<input id="total" placeholder="إجمالي السعر">
-<input id="cost" placeholder="التكلفة">
-<input id="paid" placeholder="المدفوع">
-<input id="delivery" type="date">
-<select id="status">
-<option>قيد التنفيذ</option>
-<option>في انتظار العميل</option>
-<option>جاهز</option>
-<option>تم التسليم</option>
-</select>
-<button onclick="saveOrder()">حفظ</button>
-</div>
+    <select id="status">
+      <option value="قيد التنفيذ">قيد التنفيذ</option>
+      <option value="تم التسليم">تم التسليم</option>
+    </select>
 
-<div class="box report">
-<div>إجمالي: <b id="sumTotal">0</b></div>
-<div>مدفوع: <b id="sumPaid">0</b></div>
-</div>
-<input id="cost" placeholder="التكلفة">
+    <button onclick="addOrder()">إضافة</button>
+  </div>
 
-<div class="box">
-<h3>الأوردرات</h3>
-<div id="orders"></div>
-</div>
+  <div class="box">
+    <h3>الأوردرات</h3>
+    <div id="orders"></div>
+    <h4>إجمالي الأرباح: <span id="profit">0</span> جنيه</h4>
+  </div>
 
-</div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
+      authDomain: "mt-factory.firebaseapp.com",
+      projectId: "mt-factory",
+      storageBucket: "mt-factory.appspot.com",
+      messagingSenderId: "462981501394",
+      appId: "1:462981501394:web:d9f1736711d3990220380b"
+    };
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
-    authDomain: "mt-factory.firebaseapp.com",
-    projectId: "mt-factory",
-    storageBucket: "mt-factory.appspot.com",
-    messagingSenderId: "462981501394",
-    appId: "1:462981501394:web:d9f1736711d3990220380b"
-  };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  firebase.initializeApp(firebaseConfig);
-  console.log("🔥 Firebase Connected – SAFE MODE");
-</script>
+    console.log("🔥 Firebase Connected");
 
+    // عناصر الصفحة
+    const customer = document.getElementById("customer");
+    const phone = document.getElementById("phone");
+    const total = document.getElementById("total");
+    const cost = document.getElementById("cost");
+    const paid = document.getElementById("paid");
+    const status = document.getElementById("status");
+    const ordersDiv = document.getElementById("orders");
+    const profitSpan = document.getElementById("profit");
+
+    let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
+
+    function generateOrderId() {
+      let last = localStorage.getItem("last_order_number") || 0;
+      last = Number(last) + 1;
+      localStorage.setItem("last_order_number", last);
+      return "ORD-" + String(last).padStart(4, "0");
+    }
+
+    function addOrder() {
+      const order = {
+        id: generateOrderId(),
+        customer: customer.value,
+        phone: phone.value,
+        total: Number(total.value),
+        cost: Number(cost.value),
+        paid: Number(paid.value || 0),
+        status: status.value,
+        date: new Date().toISOString()
+      };
+
+      orders.push(order);
+      localStorage.setItem("factory_orders", JSON.stringify(orders));
+      db.collection("orders").doc(order.id).set(order);
+
+      customer.value = phone.value = total.value = cost.value = paid.value = "";
+      render();
+    }
+
+    function render() {
+      ordersDiv.innerHTML = "";
+      let profit = 0;
+
+      orders.forEach(o => {
+        const p = o.total - o.cost;
+        profit += p;
+
+        ordersDiv.innerHTML += `
+          <div class="order">
+            <b>${o.id}</b> – ${o.customer} <br>
+            بيع: ${o.total} | تكلفة: ${o.cost} | ربح: ${p}
+          </div>
+        `;
+      });
+
+      profitSpan.innerText = profit;
+    }
+
+    render();
+  </script>
+
+</body>
+</html>
