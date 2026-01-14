@@ -72,109 +72,95 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
-      authDomain: "mt-factory.firebaseapp.com",
-      projectId: "mt-factory",
-      storageBucket: "mt-factory.appspot.com",
-      messagingSenderId: "462981501394",
-      appId: "1:462981501394:web:d9f1736711d3990220380b"
-    };
+<script>
+  /* ========= Firebase ========= */
+  const firebaseConfig = {
+    apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
+    authDomain: "mt-factory.firebaseapp.com",
+    projectId: "mt-factory",
+    storageBucket: "mt-factory.appspot.com",
+    messagingSenderId: "462981501394",
+    appId: "1:462981501394:web:d9f1736711d3990220380b"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  console.log("🔥 Firebase Connected – CLEAN");
 
-    console.log("🔥 Firebase Connected");
+  /* ========= Elements ========= */
+  const customer = document.getElementById("customer");
+  const phone = document.getElementById("phone");
+  const total = document.getElementById("total");
+  const cost = document.getElementById("cost");
+  const paid = document.getElementById("paid");
+  const status = document.getElementById("status");
+  const ordersDiv = document.getElementById("orders");
+  const profitSpan = document.getElementById("profit");
+  const searchInput = document.getElementById("search");
 
-    // عناصر الصفحة
-    const customer = document.getElementById("customer");
-    const phone = document.getElementById("phone");
-    const total = document.getElementById("total");
-    const cost = document.getElementById("cost");
-    const paid = document.getElementById("paid");
-    const status = document.getElementById("status");
-    const ordersDiv = document.getElementById("orders");
-    const profitSpan = document.getElementById("profit");
-    const searchInput = document.getElementById("search");
+  /* ========= Data ========= */
+  let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
 
-    let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
+  /* ========= Order ID ========= */
+  function generateOrderId() {
+    let last = Number(localStorage.getItem("last_order_number") || 0) + 1;
+    localStorage.setItem("last_order_number", last);
+    return "ORD-" + String(last).padStart(4, "0");
+  }
 
-    function generateOrderId() {
-      let last = localStorage.getItem("last_order_number") || 0;
-      last = Number(last) + 1;
-      localStorage.setItem("last_order_number", last);
-      return "ORD-" + String(last).padStart(4, "0");
+  /* ========= Add Order ========= */
+  function addOrder() {
+    if (!customer.value || !phone.value || !total.value || !cost.value) {
+      alert("كمّل كل البيانات");
+      return;
     }
 
-function addOrder() 
-  if (!customer.value || !phone.value || !total.value || !cost.value) {
-    alert("من فضلك كمل كل البيانات (الاسم – الموبايل – السعر – التكلفة)");
-    return;
+    const order = {
+      id: generateOrderId(),
+      customer: customer.value,
+      phone: phone.value,
+      total: Number(total.value),
+      cost: Number(cost.value),
+      paid: Number(paid.value || 0),
+      status: status.value,
+      date: new Date().toISOString()
+    };
+
+    orders.push(order);
+    localStorage.setItem("factory_orders", JSON.stringify(orders));
+    db.collection("orders").doc(order.id).set(order);
+
+    customer.value = phone.value = total.value = cost.value = paid.value = "";
+    render();
   }
 
-  const order = {
-    id: generateOrderId(),
-    customer: customer.value,
-    phone: phone.value,
-    total: Number(total.value),
-    cost: Number(cost.value),
-    paid: Number(paid.value || 0),
-    status: status.value,
-    date: new Date().toISOString()
-  ;
+  /* ========= Render ========= */
+  function render() {
+    ordersDiv.innerHTML = "";
+    let profit = 0;
 
-  // حفظ محلي
-  orders.push(order);
-  localStorage.setItem("factory_orders", JSON.stringify(orders));
+    let query = searchInput ? searchInput.value.toLowerCase() : "";
 
-  // حفظ على Firebase
-  db.collection("orders").doc(order.id).set(order);
+    orders
+      .filter(o =>
+        o.id.toLowerCase().includes(query) ||
+        o.customer.toLowerCase().includes(query) ||
+        o.phone.includes(query)
+      )
+      .forEach(o => {
+        let p = o.total - o.cost;
+        profit += p;
 
-  // تفريغ الحقول
-  customer.value = "";
-  phone.value = "";
-  total.value = "";
-  cost.value = "";
-  paid.value = "";
+        ordersDiv.innerHTML += `
+          <div class="order">
+            <b>${o.id}</b> – ${o.customer}<br>
+            ${o.phone}<br>
+            بيع: ${o.total} | تكلفة: ${o.cost} | ربح: ${p}
+          </div>
+        `;
+      });
 
-  render();
-}
-
-function render() {
-function render() {
-  ordersDiv.innerHTML = "";
-  let profit = 0;
-
-  let q = "";
-  if (searchInput) {
-    q = searchInput.value.toLowerCase();
+    profitSpan.innerText = profit;
   }
 
-  orders
-    .filter(o =>
-      o.id.toLowerCase().includes(q) ||
-      o.customer.toLowerCase().includes(q) ||
-      o.phone.includes(q)
-    )
-    .forEach(o => {
-      const p = o.total - o.cost;
-      profit += p;
-
-      ordersDiv.innerHTML += `
-        <div class="order">
-          <b>${o.id}</b> – ${o.customer}<br>
-          موبايل: ${o.phone}<br>
-          بيع: ${o.total} | تكلفة: ${o.cost} | ربح: ${p}
-        </div>
-      `;
-    });
-
-  profitSpan.innerText = profit;
-}
-
-  </script>
-
-</body>
-</html>
+  if (searchIn
