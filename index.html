@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>FACTORY Order System</title>
+  <title>MT FACTORY Order System</title>
   <style>
     body {
       font-family: Arial;
@@ -82,6 +82,11 @@
   }
 
   function addOrder() {
+    if (!customer.value || !phone.value || !total.value) {
+      alert("من فضلك أدخل كل البيانات");
+      return;
+    }
+
     orders.push({
       id: Date.now(),
       customer: customer.value,
@@ -90,6 +95,12 @@
       paid: Number(paid.value || 0),
       status: status.value
     });
+
+    customer.value = "";
+    phone.value = "";
+    total.value = "";
+    paid.value = "";
+
     render();
   }
 
