@@ -34,6 +34,7 @@ button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointe
 <input id="customer" placeholder="اسم العميل">
 <input id="phone" placeholder="رقم الموبايل">
 <input id="total" placeholder="إجمالي السعر">
+<input id="cost" placeholder="التكلفة">
 <input id="paid" placeholder="المدفوع">
 <input id="delivery" type="date">
 <select id="status">
@@ -49,6 +50,7 @@ button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointe
 <div>إجمالي: <b id="sumTotal">0</b></div>
 <div>مدفوع: <b id="sumPaid">0</b></div>
 </div>
+<input id="cost" placeholder="التكلفة">
 
 <div class="box">
 <h3>الأوردرات</h3>
@@ -78,8 +80,51 @@ button{background:#0b3a7e;color:#fff;border:none;border-radius:6px;cursor:pointe
   const db = firebase.firestore();
 
   console.log("🔥 Firebase Connected");
+  function addOrder() {
+  const order = {
+    id: generateOrderId(),
+    customer: customer.value,
+    phone: phone.value,
+    total: Number(total.value),
+    cost: Number(cost.value),
+    paid: Number(paid.value || 0),
+    status: status.value,
+    date: new Date().toISOString()
+  };
+
+  // حفظ محلي
+  orders.push(order);
+  localStorage.setItem("factory_orders", JSON.stringify(orders));
+
+  // حفظ على Firebase
+  db.collection("orders").doc(order.id).set(order);
+
+  render();
+}
 
   const PASSWORD = "factory123";
   let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
   let editId = null;
+function addOrder() {
+  const order = {
+    id: generateOrderId(),
+    customer: customer.value,
+    phone: phone.value,
+    total: Number(total.value),
+    cost: Number(cost.value),
+    paid: Number(paid.value || 0),
+    status: status.value,
+    date: new Date().toISOString()
+  };
+
+  // LocalStorage
+  orders.push(order);
+  localStorage.setItem("factory_orders", JSON.stringify(orders));
+
+  // Firebase
+  db.collection("orders").doc(order.id).set(order);
+
+  render();
+}
+
 </script>
