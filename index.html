@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>FACTORY Order System</title>
+  <style>
+    body {
+      font-family: Arial;
+      direction: rtl;
+      background: #f2f6fb;
+      padding: 20px;
+      color: #0b3a7e;
+    }
+    h1 { text-align: center; }
+    .box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #0b3a7e;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .order {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>MT FACTORY<br>Order System</h1>
+
+<div class="box">
+  <h3>إضافة أوردر</h3>
+  <input id="customer" placeholder="اسم العميل">
+  <input id="phone" placeholder="رقم الموبايل">
+  <input id="total" placeholder="إجمالي السعر">
+  <input id="paid" placeholder="المدفوع (عربون)">
+  <select id="status">
+    <option>قيد التنفيذ</option>
+    <option>في انتظار العميل</option>
+    <option>جاهز</option>
+    <option>تم التسليم</option>
+  </select>
+  <button onclick="addOrder()">إضافة</button>
+</div>
+
+<div class="box">
+  <h3>الأوردرات</h3>
+  <div id="orders"></div>
+</div>
+
+<script>
+  let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
+  const ordersDiv = document.getElementById("orders");
+
+  function render() {
+    ordersDiv.innerHTML = "";
+    orders.forEach(o => {
+      ordersDiv.innerHTML += `
+        <div class="order">
+          <strong>${o.customer}</strong> - ${o.phone}<br>
+          الإجمالي: ${o.total} | المدفوع: ${o.paid} | المتبقي: ${o.total - o.paid}<br>
+          الحالة: ${o.status}<br>
+          <button onclick="printInvoice(${o.id})">طباعة فاتورة</button>
+        </div>
+      `;
+    });
+    localStorage.setItem("factory_orders", JSON.stringify(orders));
+  }
+
+  function addOrder() {
+    orders.push({
+      id: Date.now(),
+      customer: customer.value,
+      phone: phone.value,
+      total: Number(total.value),
+      paid: Number(paid.value || 0),
+      status: status.value
+    });
+    render();
+  }
+
+  function printInvoice(id) {
+    const o = orders.find(x => x.id === id);
+    const w = window.open("");
+    w.document.write(`
+      <h2>MT FACTORY</h2>
+      <p>فاتورة</p>
+      <p>العميل: ${o.customer}</p>
+      <p>الموبايل: ${o.phone}</p>
+      <p>الإجمالي: ${o.total}</p>
+      <p>المدفوع: ${o.paid}</p>
+      <p>المتبقي: ${o.total - o.paid}</p>
+      <p>📞 01044067766</p>
+      <script>window.print()</script>
+    `);
+  }
+
+  render();
+</script>
+
+</body>
+</html>
