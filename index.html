@@ -1,94 +1,208 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>MT Factory Orders</title>
-
-<style>
-body{font-family:Arial;background:#f4f6f8;direction:rtl;padding:20px}
-.box{background:#fff;padding:20px;border-radius:10px;margin-bottom:20px}
-input,select,button{width:100%;padding:10px;margin-bottom:10px}
-button{background:#0b3c88;color:#fff;border:none}
-.order{border-bottom:1px solid #ddd;padding:10px}
-.small{color:#666;font-size:14px}
-</style>
+  <meta charset="UTF-8">
+  <title>MT FACTORY - Order System</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="box">
-<h3>إضافة أوردر</h3>
-
-<input id="customer" placeholder="اسم العميل">
-<input id="phone" placeholder="رقم الموبايل">
-<input id="total" placeholder="إجمالي السعر">
-<input id="cost" placeholder="التكلفة">
-
-<button onclick="addOrder()">إضافة</button>
+<!-- LOGIN -->
+<div id="loginBox" class="center">
+  <h2>MT FACTORY</h2>
+  <input type="password" id="password" placeholder="Enter password">
+  <button onclick="login()">Login</button>
 </div>
 
-<div class="box">
-<h3>الأوردرات</h3>
-<div id="orders"></div>
+<!-- APP -->
+<div id="app" class="hidden">
+
+  <header>
+    <h2>MT FACTORY</h2>
+  </header>
+
+  <nav>
+    <button onclick="showSection('add')">+ Order</button>
+    <button onclick="filterStatus('Design')">Design</button>
+    <button onclick="filterStatus('Laser')">Laser</button>
+    <button onclick="filterStatus('Package')">Package</button>
+    <button onclick="filterStatus('Shipping')">Shipping</button>
+    <button onclick="filterStatus('Shipped')">Shipped</button>
+    <button onclick="showAll()">All Orders</button>
+  </nav>
+
+  <!-- ADD ORDER -->
+  <section id="addSection" class="box">
+    <h3>Add Order</h3>
+
+    <input id="fullName" placeholder="Full Name">
+    <input id="fbName" placeholder="Facebook Name">
+    <input id="phone" placeholder="Phone Number">
+    <input id="address" placeholder="Address">
+    <input id="zone" placeholder="Zone">
+    <input id="product" placeholder="Product Name">
+    <input id="cost" placeholder="Cost">
+    <input id="total" placeholder="Total">
+
+    <select id="status">
+      <option>Design</option>
+      <option>Laser</option>
+      <option>Package</option>
+      <option>Shipping</option>
+      <option>Shipped</option>
+    </select>
+
+    <button onclick="addOrder()">Save Order</button>
+  </section>
+
+  <!-- ORDERS -->
+  <section class="box">
+    <h3>Orders</h3>
+    <div id="orders"></div>
+  </section>
+
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCvcrAV2T9ocmKJzwBgkDGK18wXxnd3XV0",
-  authDomain: "mt-factory.firebaseapp.com",
-  projectId: "mt-factory",
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-const ordersDiv = document.getElementById("orders");
-
-async function addOrder(){
-  const customer = document.getElementById("customer").value;
-  const phone = document.getElementById("phone").value;
-  const total = Number(document.getElementById("total").value);
-  const cost = Number(document.getElementById("cost").value);
-
-  if(!customer || !total){ alert("كمل البيانات"); return; }
-
-  const snap = await db.collection("orders").get();
-  const orderId = "ORD-" + String(snap.size + 1).padStart(4,"0");
-
-  await db.collection("orders").add({
-    orderId,
-    customer,
-    phone,
-    total,
-    cost,
-    profit: total - cost,
-    date: new Date()
-  });
-
-  document.querySelectorAll("input").forEach(i=>i.value="");
-}
-
-db.collection("orders").orderBy("date","desc")
-.onSnapshot(snap=>{
-  ordersDiv.innerHTML="";
-  snap.forEach(doc=>{
-    const o = doc.data();
-    ordersDiv.innerHTML += `
-      <div class="order">
-        <b>${o.orderId}</b><br>
-        ${o.customer} - ${o.phone}<br>
-        إجمالي: ${o.total} | تكلفة: ${o.cost}<br>
-        <b>ربح: ${o.profit}</b>
-      </div>
-    `;
-  });
-});
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
 
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  margin: 0;
+}
+
+.center {
+  width: 300px;
+  margin: 150px auto;
+  text-align: center;
+}
+
+.hidden { display: none; }
+
+header {
+  background: #0b3c88;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+nav {
+  background: #ffffff;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+nav button {
+  background: #0b3c88;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.box {
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+button {
+  background: #0b3c88;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+}
+
+.order {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+}
+
+const PASSWORD = "factory123";
+
+const loginBox = document.getElementById("loginBox");
+const app = document.getElementById("app");
+const ordersDiv = document.getElementById("orders");
+const addSection = document.getElementById("addSection");
+
+let orders = [];
+let currentFilter = "ALL";
+
+function login() {
+  const pass = document.getElementById("password").value;
+  if (pass === PASSWORD) {
+    loginBox.classList.add("hidden");
+    app.classList.remove("hidden");
+  } else {
+    alert("Wrong password");
+  }
+}
+
+function addOrder() {
+  const order = {
+    id: "ORD-" + String(orders.length + 1).padStart(4, "0"),
+    fullName: fullName.value,
+    fbName: fbName.value,
+    phone: phone.value,
+    address: address.value,
+    zone: zone.value,
+    product: product.value,
+    cost: Number(cost.value),
+    total: Number(total.value),
+    profit: Number(total.value) - Number(cost.value),
+    status: status.value,
+    date: new Date().toLocaleDateString()
+  };
+
+  orders.push(order);
+  clearForm();
+  renderOrders();
+}
+
+function clearForm() {
+  document.querySelectorAll("input").forEach(i => i.value = "");
+}
+
+function renderOrders() {
+  ordersDiv.innerHTML = "";
+
+  orders
+    .filter(o => currentFilter === "ALL" || o.status === currentFilter)
+    .forEach(o => {
+      ordersDiv.innerHTML += `
+        <div class="order">
+          <b>${o.id}</b> - ${o.fullName}<br>
+          Product: ${o.product}<br>
+          Total: ${o.total} | Cost: ${o.cost} | <b>Profit: ${o.profit}</b><br>
+          Status: ${o.status}
+        </div>
+      `;
+    });
+}
+
+function filterStatus(status) {
+  currentFilter = status;
+  renderOrders();
+}
+
+function showAll() {
+  currentFilter = "ALL";
+  renderOrders();
+}
+
+function showSection() {
+  addSection.scrollIntoView({ behavior: "smooth" });
+}
