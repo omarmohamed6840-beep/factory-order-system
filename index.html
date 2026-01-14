@@ -63,25 +63,34 @@
 </div>
 
 <script>
-  let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
+(function () {
+
   const ordersDiv = document.getElementById("orders");
+
+  let orders = [];
+  try {
+    orders = JSON.parse(localStorage.getItem("factory_orders")) || [];
+  } catch {
+    orders = [];
+  }
 
   function render() {
     ordersDiv.innerHTML = "";
     orders.forEach(o => {
-      ordersDiv.innerHTML += `
-        <div class="order">
-          <strong>${o.customer}</strong> - ${o.phone}<br>
-          الإجمالي: ${o.total} | المدفوع: ${o.paid} | المتبقي: ${o.total - o.paid}<br>
-          الحالة: ${o.status}<br>
-          <button onclick="printInvoice(${o.id})">طباعة فاتورة</button>
-        </div>
+      const div = document.createElement("div");
+      div.className = "order";
+      div.innerHTML = `
+        <strong>${o.customer}</strong> - ${o.phone}<br>
+        الإجمالي: ${o.total} | المدفوع: ${o.paid} | المتبقي: ${o.total - o.paid}<br>
+        الحالة: ${o.status}<br>
+        <button onclick="printInvoice(${o.id})">طباعة فاتورة</button>
       `;
+      ordersDiv.appendChild(div);
     });
     localStorage.setItem("factory_orders", JSON.stringify(orders));
   }
 
-  function addOrder() {
+  window.addOrder = function () {
     if (!customer.value || !phone.value || !total.value) {
       alert("من فضلك أدخل كل البيانات");
       return;
@@ -102,9 +111,9 @@
     paid.value = "";
 
     render();
-  }
+  };
 
-  function printInvoice(id) {
+  window.printInvoice = function (id) {
     const o = orders.find(x => x.id === id);
     const w = window.open("");
     w.document.write(`
@@ -116,12 +125,15 @@
       <p>المدفوع: ${o.paid}</p>
       <p>المتبقي: ${o.total - o.paid}</p>
       <p>📞 01044067766</p>
-      <script>window.print()</script>
+      <script>window.print()<\/script>
     `);
-  }
+  };
 
   render();
+
+})();
 </script>
+
 
 </body>
 </html>
