@@ -57,11 +57,16 @@
     <button onclick="addOrder()">إضافة</button>
   </div>
 
-  <div class="box">
-    <h3>الأوردرات</h3>
-    <div id="orders"></div>
-    <h4>إجمالي الأرباح: <span id="profit">0</span> جنيه</h4>
-  </div>
+ <div class="box">
+  <h3>الأوردرات</h3>
+
+  <input id="search" placeholder="ابحث بـ Order ID أو الاسم أو الموبايل">
+
+  <div id="orders"></div>
+
+  <h4>إجمالي الأرباح: <span id="profit">0</span> جنيه</h4>
+</div>
+
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -92,6 +97,7 @@
     const status = document.getElementById("status");
     const ordersDiv = document.getElementById("orders");
     const profitSpan = document.getElementById("profit");
+    const searchInput = document.getElementById("search");
 
     let orders = JSON.parse(localStorage.getItem("factory_orders") || "[]");
 
@@ -122,26 +128,37 @@
       render();
     }
 
-    function render() {
-      ordersDiv.innerHTML = "";
-      let profit = 0;
+function render() {
+  ordersDiv.innerHTML = "";
+  let profit = 0;
 
-      orders.forEach(o => {
-        const p = o.total - o.cost;
-        profit += p;
+  const q = searchInput.value.toLowerCase();
 
-        ordersDiv.innerHTML += `
-          <div class="order">
-            <b>${o.id}</b> – ${o.customer} <br>
-            بيع: ${o.total} | تكلفة: ${o.cost} | ربح: ${p}
-          </div>
-        `;
-      });
+  orders
+    .filter(o =>
+      o.id.toLowerCase().includes(q) ||
+      o.customer.toLowerCase().includes(q) ||
+      o.phone.includes(q)
+    )
+    .forEach(o => {
+      const p = o.total - o.cost;
+      profit += p;
 
-      profitSpan.innerText = profit;
-    }
+      ordersDiv.innerHTML += `
+        <div class="order">
+          <b>${o.id}</b> – ${o.customer}<br>
+          موبايل: ${o.phone}<br>
+          بيع: ${o.total} | تكلفة: ${o.cost} | ربح: ${p}
+        </div>
+      `;
+    });
 
-    render();
+  profitSpan.innerText = profit;
+}
+
+   render();
+searchInput.addEventListener("input", render);
+
   </script>
 
 </body>
