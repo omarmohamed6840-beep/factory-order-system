@@ -109,11 +109,30 @@
   }
 
   /* ========= Add Order ========= */
-  function addOrder() {
-    if (!customer.value || !phone.value || !total.value || !cost.value) {
-      alert("كمّل كل البيانات");
-      return;
-    }
+window.addOrder = function () {
+  if (!customer.value || !phone.value || !total.value || !cost.value) {
+    alert("كمّل كل البيانات");
+    return;
+  }
+
+  const order = {
+    id: generateOrderId(),
+    customer: customer.value,
+    phone: phone.value,
+    total: Number(total.value),
+    cost: Number(cost.value),
+    paid: Number(paid.value || 0),
+    status: status.value,
+    date: new Date().toISOString()
+  };
+
+  orders.push(order);
+  localStorage.setItem("factory_orders", JSON.stringify(orders));
+  db.collection("orders").doc(order.id).set(order);
+
+  customer.value = phone.value = total.value = cost.value = paid.value = "";
+  render();
+};
 
     const order = {
       id: generateOrderId(),
