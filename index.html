@@ -1,197 +1,138 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>MT FACTORY - نظام الأوردرات</title>
-
+<title>MT FACTORY - Order System</title>
 <style>
-body{
-  font-family: Arial;
-  background:#f4f6f9;
-  margin:0;
-  direction:rtl;
-}
+body{font-family:Arial;background:#f4f6f9;margin:0}
+header{background:#0b3c88;color:#fff;padding:15px;text-align:center}
+.box{background:#fff;margin:20px;padding:20px;border-radius:8px}
+input,select,button{padding:8px;margin:5px;width:100%}
+button{background:#0b3c88;color:#fff;border:none;cursor:pointer}
+.order{border-bottom:1px solid #ddd;padding:10px}
 .hidden{display:none}
-header{
-  background:#0b3c88;
-  color:#fff;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-}
-.container{padding:20px}
-.box{
-  background:#fff;
-  padding:20px;
-  border-radius:10px;
-  margin-bottom:20px;
-}
-input,select,button{
-  width:100%;
-  padding:10px;
-  margin-bottom:10px;
-}
-button{
-  background:#0b3c88;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-}
-.order{
-  border-bottom:1px solid #ddd;
-  padding:10px 0;
-}
-.nav button{
-  width:auto;
-  margin:5px;
-}
-.total{
-  font-weight:bold;
-  margin-top:10px;
-}
 </style>
 </head>
 
 <body>
 
-<!-- تسجيل الدخول -->
-<div id="loginBox" class="container">
-  <div class="box">
-    <h2>MT FACTORY</h2>
-    <input type="password" id="password" placeholder="كلمة المرور">
-    <button onclick="login()">دخول</button>
-  </div>
+<header>
+<h2>MT FACTORY</h2>
+</header>
+
+<div class="box" id="loginBox">
+<h3>تسجيل الدخول</h3>
+<input type="password" id="password" placeholder="كلمة المرور">
+<button onclick="login()">دخول</button>
 </div>
 
-<!-- التطبيق -->
-<div id="app" class="hidden">
+<div class="box hidden" id="app">
 
-<header>MT FACTORY - ليزر وديزاين</header>
-
-<div class="container">
-
-<div class="box nav">
-  <button onclick="showAll()">كل الأوردرات</button>
-  <button onclick="filterStatus('تصميم')">تصميم</button>
-  <button onclick="filterStatus('ليزر')">ليزر</button>
-  <button onclick="filterStatus('تجهيز')">تجهيز</button>
-  <button onclick="filterStatus('شحن')">شحن</button>
-  <button onclick="filterStatus('تم التسليم')">تم التسليم</button>
-</div>
-
-<div class="box">
 <h3>إضافة أوردر</h3>
+
 <input id="customer" placeholder="اسم العميل">
 <input id="phone" placeholder="رقم الموبايل">
 <input id="address" placeholder="العنوان">
-<input id="product" placeholder="المنتج">
-<input id="price" placeholder="السعر">
+<input id="product" placeholder="اسم المنتج">
+<input id="cost" type="number" placeholder="التكلفة">
+<input id="price" type="number" placeholder="السعر">
 
 <select id="status">
-  <option>تصميم</option>
-  <option>ليزر</option>
-  <option>تجهيز</option>
-  <option>شحن</option>
-  <option>تم التسليم</option>
+<option>Design</option>
+<option>Laser</option>
+<option>Shipping</option>
+<option>Shipped</option>
 </select>
 
 <button onclick="addOrder()">حفظ الأوردر</button>
-</div>
 
-<div class="box">
+<hr>
+
 <h3>بحث برقم الأوردر</h3>
-<input id="search" placeholder="مثال: ORD-0001" oninput="renderOrders()">
-</div>
+<input id="search" placeholder="ORD-0001" oninput="renderOrders()">
 
-<div class="box">
+<hr>
+
 <h3>الأوردرات</h3>
 <div id="orders"></div>
 
-<div class="total">إجمالي المبيعات: <span id="totalSales">0</span></div>
-<div class="total">Cash Out: <span id="cashOut">0</span></div>
-</div>
+<hr>
+<h3>الإجماليات</h3>
+<p>إجمالي الأرباح: <span id="profit">0</span></p>
+<p>Cash Out: <span id="cash">0</span></p>
 
-</div>
 </div>
 
 <script>
-const PASSWORD = "factory123";
-let orders = JSON.parse(localStorage.getItem("orders") || "[]");
-let currentFilter = "ALL";
+const PASSWORD="factory123";
+const ordersDiv=document.getElementById("orders");
+
+let orders=JSON.parse(localStorage.getItem("orders")||"[]");
 
 function login(){
-  if(password.value === PASSWORD){
+  if(password.value===PASSWORD){
     loginBox.classList.add("hidden");
     app.classList.remove("hidden");
     renderOrders();
-  } else {
-    alert("كلمة المرور غير صحيحة");
-  }
+  } else alert("كلمة المرور خطأ");
 }
 
-function generateOrderId(){
-  return "ORD-" + String(orders.length + 1).padStart(4,"0");
+function generateId(){
+  return "ORD-"+String(orders.length+1).padStart(4,"0");
 }
 
 function addOrder(){
-  if(!customer.value || !price.value){
-    alert("كمل البيانات");
-    return;
-  }
+  if(!customer.value||!phone.value) return alert("أكمل البيانات");
 
-  const order = {
-    id: generateOrderId(),
-    customer: customer.value,
-    phone: phone.value,
-    address: address.value,
-    product: product.value,
-    price: Number(price.value),
-    status: status.value
+  const order={
+    id:generateId(),
+    customer:customer.value,
+    phone:phone.value,
+    address:address.value,
+    product:product.value,
+    cost:Number(cost.value),
+    price:Number(price.value),
+    profit:Number(price.value)-Number(cost.value),
+    status:status.value,
+    date:new Date().toLocaleDateString()
   };
 
   orders.push(order);
-  localStorage.setItem("orders", JSON.stringify(orders));
+  localStorage.setItem("orders",JSON.stringify(orders));
   clearForm();
   renderOrders();
 }
 
 function clearForm(){
-  document.querySelectorAll("input").forEach(i => i.value="");
+  customer.value="";
+  phone.value="";
+  address.value="";
+  product.value="";
+  cost.value="";
+  price.value="";
 }
 
 function renderOrders(){
-  const q = search.value.trim().toLowerCase();
-  let total = 0;
-  ordersDiv.innerHTML = "";
+  ordersDiv.innerHTML="";
+  let totalProfit=0;
+  let totalCash=0;
 
-  orders
-    .filter(o =>
-      (currentFilter === "ALL" || o.status === currentFilter) &&
-      (!q || o.id.toLowerCase().includes(q))
-    )
-    .forEach(o => {
-      total += o.price;
-      ordersDiv.innerHTML += `
-        <div class="order">
-          <b>${o.id}</b> - ${o.customer}<br>
-          ${o.product} - ${o.price}<br>
-          الحالة: ${o.status}
-        </div>
-      `;
-    });
+  const q=search.value.toLowerCase();
 
-  totalSales.innerText = total;
-  cashOut.innerText = total;
-}
+  orders.filter(o=>o.id.toLowerCase().includes(q)).forEach(o=>{
+    totalProfit+=o.profit;
+    totalCash+=o.price;
 
-function filterStatus(s){
-  currentFilter = s;
-  renderOrders();
-}
+    ordersDiv.innerHTML+=`
+    <div class="order">
+      <b>${o.id}</b> - ${o.customer}<br>
+      ${o.product} | ${o.status}<br>
+      السعر: ${o.price} | التكلفة: ${o.cost} | الربح: ${o.profit}
+    </div>`;
+  });
 
-function showAll(){
-  currentFilter = "ALL";
-  renderOrders();
+  profit.innerText=totalProfit;
+  cash.innerText=totalCash;
 }
 </script>
 
