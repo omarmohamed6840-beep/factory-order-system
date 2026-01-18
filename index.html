@@ -11,25 +11,21 @@ body{
   background:#f4f6f9;
 }
 header{
-  background:linear-gradient(135deg,#0b3c88,#1e5fd1);
+  background:#0b3c88;
   color:#fff;
   padding:20px;
   text-align:center;
   font-size:24px;
 }
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
-}
+.container{max-width:1200px;margin:auto;padding:20px}
 .card{
   background:#fff;
-  border-radius:14px;
   padding:20px;
+  border-radius:14px;
   margin-bottom:20px;
   box-shadow:0 8px 18px rgba(0,0,0,.08);
 }
-input{
+input,textarea{
   width:100%;
   padding:10px;
   margin:6px 0;
@@ -42,28 +38,19 @@ button{
   border-radius:8px;
   cursor:pointer;
 }
-.main{background:#0b3c88;color:#fff}
-.danger{background:#c0392b;color:#fff}
-.gray{background:#7f8c8d;color:#fff}
-.hidden{display:none}
-.order{
-  border:1px solid #eee;
-  border-radius:10px;
-  padding:12px;
-  margin-bottom:10px;
+.btn{background:#0b3c88;color:#fff}
+.btn-red{background:#c0392b;color:#fff}
+.tabs button{margin-left:5px}
+table{
+  width:100%;
+  border-collapse:collapse;
 }
-.orderHeader{
-  display:flex;
-  justify-content:space-between;
-  cursor:pointer;
-  font-weight:bold;
-}
-.details{
-  margin-top:10px;
-  background:#eef3ff;
+th,td{
   padding:10px;
-  border-radius:8px;
+  border-bottom:1px solid #eee;
 }
+th{background:#eef3ff}
+.hidden{display:none}
 .totalBox{
   background:#0b3c88;
   color:#fff;
@@ -84,136 +71,172 @@ button{
 <div class="card loginBox" id="loginBox">
   <h3>تسجيل الدخول</h3>
   <input type="password" id="password" placeholder="كلمة المرور">
-  <button class="main" onclick="login()">دخول</button>
+  <button class="btn" onclick="login()">دخول</button>
 </div>
 
 <div class="container hidden" id="app">
 
-<div class="card">
-  <h3>إضافة أوردر</h3>
-  <input id="customer" placeholder="اسم العميل">
-  <input id="phone" placeholder="رقم الموبايل">
-  <input id="product" placeholder="المنتج">
-  <input id="price" type="number" placeholder="سعر المنتج">
-  <input id="shipping" type="number" placeholder="الشحن">
-  <input id="install" type="number" placeholder="التركيب">
-  <input id="discount" type="number" placeholder="خصم">
-  <button class="main" onclick="saveOrder()">حفظ الأوردر</button>
+<div class="tabs card">
+  <button class="btn" onclick="showTab('orders')">الأوردرات</button>
+  <button class="btn" onclick="showTab('cash')">Cash Out</button>
 </div>
 
-<div class="card">
-  <h3>بحث برقم الموبايل</h3>
-  <input id="search" placeholder="اكتب رقم الموبايل" oninput="renderOrders()">
+<!-- ORDERS -->
+<div id="ordersTab" class="card">
+<h3>إضافة أوردر</h3>
+<input id="customer" placeholder="اسم العميل">
+<input id="phone" placeholder="رقم الموبايل">
+<input id="product" placeholder="المنتج">
+<input id="price" type="number" placeholder="سعر المنتج">
+<input id="shipping" type="number" placeholder="الشحن">
+<input id="install" type="number" placeholder="التركيب">
+<input id="discount" type="number" placeholder="خصم">
+<button class="btn" onclick="saveOrder()">حفظ</button>
+
+<hr>
+<input id="search" placeholder="بحث برقم الموبايل" oninput="renderOrders()">
+
+<table>
+<thead>
+<tr>
+<th>العميل</th><th>الموبايل</th><th>الإجمالي</th><th>تحكم</th>
+</tr>
+</thead>
+<tbody id="orders"></tbody>
+</table>
 </div>
 
-<div class="card">
-  <h3>الأوردرات</h3>
-  <div id="orders"></div>
+<!-- CASH OUT -->
+<div id="cashTab" class="card hidden">
+<h3>Cash Out</h3>
+<input id="cashAmount" type="number" placeholder="المبلغ">
+<input id="cashNote" placeholder="اتصرف في إيه">
+<button class="btn" onclick="addCash()">إضافة</button>
+
+<table>
+<thead>
+<tr><th>المبلغ</th><th>السبب</th><th>حذف</th></tr>
+</thead>
+<tbody id="cashList"></tbody>
+</table>
 </div>
 
 <div class="totalBox">
-  إجمالي المبيعات: <b><span id="totalSales">0</span></b>
+<p>إجمالي المبيعات: <b id="sales">0</b></p>
+<p>إجمالي الكاش أوت: <b id="cashTotal">0</b></p>
+<p>الصافي: <b id="net">0</b></p>
 </div>
 
 </div>
 
 <script>
 const PASSWORD="factory123";
-
-const loginBox=document.getElementById("loginBox");
-const app=document.getElementById("app");
-const password=document.getElementById("password");
-const ordersDiv=document.getElementById("orders");
-const search=document.getElementById("search");
-const totalSales=document.getElementById("totalSales");
-
-const customer=document.getElementById("customer");
-const phone=document.getElementById("phone");
-const product=document.getElementById("product");
-const price=document.getElementById("price");
-const shipping=document.getElementById("shipping");
-const install=document.getElementById("install");
-const discount=document.getElementById("discount");
-
 let orders=JSON.parse(localStorage.getItem("orders")||"[]");
-let editIndex=null;
+let cash=JSON.parse(localStorage.getItem("cash")||"[]");
 
 function login(){
-  if(password.value===PASSWORD){
-    loginBox.classList.add("hidden");
-    app.classList.remove("hidden");
-    renderOrders();
-  }else alert("كلمة المرور خطأ");
+ if(password.value===PASSWORD){
+   loginBox.classList.add("hidden");
+   app.classList.remove("hidden");
+   renderOrders(); renderCash();
+ } else alert("كلمة المرور خطأ");
+}
+
+function showTab(t){
+ ordersTab.classList.toggle("hidden",t!=="orders");
+ cashTab.classList.toggle("hidden",t!=="cash");
 }
 
 function saveOrder(){
-  const total=
-    (+price.value||0)+
-    (+shipping.value||0)+
-    (+install.value||0)-
-    (+discount.value||0);
-
-  const data={
-    id:"ORD-"+Date.now(),
-    customer:customer.value,
-    phone:phone.value,
-    product:product.value,
-    price:+price.value||0,
-    shipping:+shipping.value||0,
-    install:+install.value||0,
-    discount:+discount.value||0,
-    total
-  };
-
-  orders.push(data);
-  localStorage.setItem("orders",JSON.stringify(orders));
-  clearForm();
-  renderOrders();
+ const total=+price.value+ +shipping.value+ +install.value- +discount.value;
+ orders.push({
+  customer:customer.value,
+  phone:phone.value,
+  product:product.value,
+  total
+ });
+ localStorage.setItem("orders",JSON.stringify(orders));
+ clearForm(); renderOrders();
 }
 
 function clearForm(){
-  customer.value="";
-  phone.value="";
-  product.value="";
-  price.value="";
-  shipping.value="";
-  install.value="";
-  discount.value="";
+ customer.value=phone.value=product.value=
+ price.value=shipping.value=install.value=discount.value="";
 }
 
 function renderOrders(){
-  ordersDiv.innerHTML="";
-  let sum=0;
-  const q=search.value||"";
-
-  orders.filter(o=>o.phone.includes(q)).forEach((o,i)=>{
-    sum+=o.total;
-    ordersDiv.innerHTML+=
-      '<div class="order">'+
-      '<div class="orderHeader" onclick="toggle('+i+')">'+
-      '<span>'+o.customer+' - '+o.total+'</span>'+
-      '<span>'+o.id+'</span>'+
-      '</div>'+
-      '<div class="details hidden" id="d'+i+'">'+
-      '<p>المنتج: '+o.product+'</p>'+
-      '<p>الإجمالي: '+o.total+'</p>'+
-      '<button class="danger" onclick="del('+i+')">حذف</button>'+
-      '</div></div>';
-  });
-
-  totalSales.innerText=sum;
+ ordersDiv.innerHTML="";
+ let sum=0;
+ const q=search.value||"";
+ orders.filter(o=>o.phone.includes(q)).forEach((o,i)=>{
+  sum+=o.total;
+  ordersDiv.innerHTML+=`
+   <tr>
+    <td>${o.customer}</td>
+    <td>${o.phone}</td>
+    <td>${o.total}</td>
+    <td>
+     <button class="btn" onclick="invoice(${i})">PDF</button>
+     <button class="btn-red" onclick="delOrder(${i})">حذف</button>
+    </td>
+   </tr>`;
+ });
+ sales.innerText=sum;
+ updateNet();
 }
 
-function toggle(i){
-  document.getElementById("d"+i).classList.toggle("hidden");
+function delOrder(i){
+ if(confirm("حذف الأوردر؟")){
+  orders.splice(i,1);
+  localStorage.setItem("orders",JSON.stringify(orders));
+  renderOrders();
+ }
 }
 
-function del(i){
-  if(confirm("حذف الأوردر؟")){
-    orders.splice(i,1);
-    localStorage.setItem("orders",JSON.stringify(orders));
-    renderOrders();
-  }
+function addCash(){
+ cash.push({amount:+cashAmount.value,note:cashNote.value});
+ localStorage.setItem("cash",JSON.stringify(cash));
+ cashAmount.value=cashNote.value="";
+ renderCash();
+}
+
+function renderCash(){
+ cashList.innerHTML="";
+ let t=0;
+ cash.forEach((c,i)=>{
+  t+=c.amount;
+  cashList.innerHTML+=`
+   <tr>
+    <td>${c.amount}</td>
+    <td>${c.note}</td>
+    <td><button class="btn-red" onclick="delCash(${i})">X</button></td>
+   </tr>`;
+ });
+ cashTotal.innerText=t;
+ updateNet();
+}
+
+function delCash(i){
+ cash.splice(i,1);
+ localStorage.setItem("cash",JSON.stringify(cash));
+ renderCash();
+}
+
+function updateNet(){
+ net.innerText= sales.innerText - cashTotal.innerText;
+}
+
+function invoice(i){
+ const o=orders[i];
+ const w=window.open("");
+ w.document.write(`
+ <h2>MT FACTORY</h2>
+ <p>العميل: ${o.customer}</p>
+ <p>الموبايل: ${o.phone}</p>
+ <p>المنتج: ${o.product}</p>
+ <h3>الإجمالي: ${o.total}</h3>
+ <script>window.print()</script>
+ `);
 }
 </script>
 
