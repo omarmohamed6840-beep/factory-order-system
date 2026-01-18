@@ -2,29 +2,20 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>MT FACTORY - نظام الأوردرات</title>
+<title>MT FACTORY</title>
+
 <style>
-:root{
-  --blue:#0b3c88;
-  --blue-light:#eaf0ff;
-  --gray:#f4f6f9;
-  --danger:#c0392b;
-  --success:#27ae60;
-}
-*{box-sizing:border-box}
 body{
-  font-family:Tahoma, Arial;
-  background:var(--gray);
   margin:0;
-  color:#333;
+  font-family:Tahoma, Arial;
+  background:#f4f6f9;
 }
 header{
-  background:var(--blue);
+  background:#0b3c88;
   color:#fff;
-  padding:18px;
+  padding:15px;
   text-align:center;
   font-size:22px;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
 }
 .container{
   max-width:1100px;
@@ -33,89 +24,62 @@ header{
 }
 .card{
   background:#fff;
-  border-radius:12px;
+  border-radius:10px;
   padding:20px;
   margin-bottom:20px;
-  box-shadow:0 4px 12px rgba(0,0,0,.06);
+  box-shadow:0 4px 10px rgba(0,0,0,.08);
 }
-.card h3{
+h3{
   margin-top:0;
-  color:var(--blue);
+  color:#0b3c88;
 }
-input,textarea{
+input, textarea{
   width:100%;
-  padding:10px 12px;
+  padding:10px;
   margin:6px 0;
-  border:1px solid #ddd;
-  border-radius:8px;
+  border:1px solid #ccc;
+  border-radius:6px;
   font-size:14px;
 }
-input:focus,textarea:focus{
-  outline:none;
-  border-color:var(--blue);
-}
-.btn{
+button{
   padding:10px 14px;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
   cursor:pointer;
   font-size:14px;
 }
-.btn-primary{background:var(--blue);color:#fff}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-secondary{background:#bdc3c7;color:#2c3e50}
-.btn + .btn{margin-right:6px}
+.btn-main{background:#0b3c88;color:#fff}
+.btn-del{background:#c0392b;color:#fff}
+.btn-edit{background:#7f8c8d;color:#fff}
 .hidden{display:none}
-
 .order{
-  border:1px solid #e6e6e6;
-  border-radius:10px;
-  padding:12px;
-  margin-bottom:10px;
-  transition:.2s;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:10px;
+  margin-bottom:8px;
 }
-.order:hover{background:#fafcff}
 .order-header{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   cursor:pointer;
-}
-.order-id{
   font-weight:bold;
-  color:var(--blue);
 }
 .details{
-  background:var(--blue-light);
-  border-radius:8px;
+  background:#eef3ff;
+  margin-top:10px;
   padding:10px;
-  margin-top:10px;
-}
-.actions{
-  margin-top:10px;
+  border-radius:6px;
 }
 .totalBox{
-  background:linear-gradient(135deg,var(--blue),#1f5fd1);
+  background:#0b3c88;
   color:#fff;
-  border-radius:14px;
   padding:20px;
+  border-radius:10px;
 }
-.totalBox p{
-  margin:6px 0;
-  font-size:16px;
-}
-.totalBox b{font-size:20px}
-.login-card{
+.totalBox p{margin:6px 0}
+.loginBox{
   max-width:400px;
   margin:120px auto;
-}
-.section-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-}
-@media(max-width:800px){
-  .section-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -125,40 +89,28 @@ input:focus,textarea:focus{
 <header>MT FACTORY</header>
 
 <!-- LOGIN -->
-<div id="loginBox" class="card login-card">
+<div class="card loginBox" id="loginBox">
   <h3>تسجيل الدخول</h3>
   <input type="password" id="password" placeholder="كلمة المرور">
-  <button class="btn btn-primary" onclick="login()">دخول</button>
+  <button class="btn-main" onclick="login()">دخول</button>
 </div>
 
 <!-- APP -->
-<div id="app" class="hidden container">
+<div class="container hidden" id="app">
 
-<div class="section-grid">
-
-  <div class="card">
-    <h3>إضافة / تعديل أوردر</h3>
-    <input id="customer" placeholder="اسم العميل">
-    <input id="phone" placeholder="رقم الموبايل">
-    <input id="address" placeholder="العنوان">
-    <input id="product" placeholder="المنتج">
-    <input id="price" type="number" placeholder="السعر">
-    <button class="btn btn-primary" onclick="saveOrder()">حفظ الأوردر</button>
-  </div>
-
-  <div class="card">
-    <h3>Cash Out (مصروفات)</h3>
-    <input id="expenseNote" placeholder="اتصرفت في إيه؟">
-    <input id="expenseAmount" type="number" placeholder="المبلغ">
-    <button class="btn btn-secondary" onclick="addExpense()">إضافة مصروف</button>
-    <div id="expenses"></div>
-  </div>
-
+<div class="card">
+  <h3>إضافة / تعديل أوردر</h3>
+  <input id="customer" placeholder="اسم العميل">
+  <input id="phone" placeholder="رقم الموبايل">
+  <input id="address" placeholder="العنوان">
+  <input id="product" placeholder="المنتج">
+  <input id="price" type="number" placeholder="السعر">
+  <button class="btn-main" onclick="saveOrder()">حفظ الأوردر</button>
 </div>
 
 <div class="card">
-  <h3>بحث برقم الأوردر</h3>
-  <input id="search" placeholder="ORD-0001" oninput="renderOrders()">
+  <h3>بحث برقم الموبايل</h3>
+  <input id="search" placeholder="اكتب رقم الموبايل" oninput="renderOrders()">
 </div>
 
 <div class="card">
@@ -166,99 +118,115 @@ input:focus,textarea:focus{
   <div id="orders"></div>
 </div>
 
+<div class="card">
+  <h3>Cash Out (مصروفات)</h3>
+  <input id="expenseNote" placeholder="اتصرفت في إيه؟">
+  <input id="expenseAmount" type="number" placeholder="المبلغ">
+  <button class="btn-edit" onclick="addExpense()">إضافة مصروف</button>
+  <div id="expenses"></div>
+</div>
+
 <div class="totalBox">
-  <p>إجمالي الأوردرات</p>
-  <b><span id="totalSales">0</span></b>
-  <p>إجمالي المصروفات</p>
-  <b><span id="totalExpenses">0</span></b>
-  <p>الصافي</p>
-  <b><span id="netTotal">0</span></b>
+  <p>إجمالي الأوردرات: <b><span id="totalSales">0</span></b></p>
+  <p>إجمالي المصروفات: <b><span id="totalExpenses">0</span></b></p>
+  <p>الصافي: <b><span id="netTotal">0</span></b></p>
 </div>
 
 </div>
 
 <script>
-const PASSWORD="factory123";
-let orders=JSON.parse(localStorage.getItem("orders")||"[]");
-let expenses=JSON.parse(localStorage.getItem("expenses")||"[]");
-let editOrderIndex=null;
+const PASSWORD = "factory123";
 
-const ordersDiv=document.getElementById("orders");
-const expensesDiv=document.getElementById("expenses");
+let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
+let editIndex = null;
+
+const ordersDiv = document.getElementById("orders");
+const expensesDiv = document.getElementById("expenses");
 
 function login(){
-  if(password.value===PASSWORD){
+  if(password.value === PASSWORD){
     loginBox.classList.add("hidden");
     app.classList.remove("hidden");
-    renderOrders(); renderExpenses();
-  } else alert("كلمة المرور خطأ");
+    renderOrders();
+    renderExpenses();
+  } else {
+    alert("كلمة المرور خطأ");
+  }
 }
 
 function generateId(){
-  return "ORD-"+String(orders.length+1).padStart(4,"0");
+  return "ORD-" + String(orders.length + 1).padStart(4,"0");
 }
 
 function saveOrder(){
-  if(!customer.value||!price.value) return alert("أكمل البيانات");
+  if(!customer.value || !phone.value || !price.value){
+    alert("أكمل البيانات");
+    return;
+  }
 
-  if(editOrderIndex===null){
+  if(editIndex === null){
     orders.push({
-      id:generateId(),
-      customer:customer.value,
-      phone:phone.value,
-      address:address.value,
-      product:product.value,
-      price:Number(price.value)
+      id: generateId(),
+      customer: customer.value,
+      phone: phone.value,
+      address: address.value,
+      product: product.value,
+      price: Number(price.value)
     });
   } else {
-    Object.assign(orders[editOrderIndex],{
-      customer:customer.value,
-      phone:phone.value,
-      address:address.value,
-      product:product.value,
-      price:Number(price.value)
-    });
-    editOrderIndex=null;
+    orders[editIndex] = {
+      ...orders[editIndex],
+      customer: customer.value,
+      phone: phone.value,
+      address: address.value,
+      product: product.value,
+      price: Number(price.value)
+    };
+    editIndex = null;
   }
-  localStorage.setItem("orders",JSON.stringify(orders));
-  customer.value=phone.value=address.value=product.value=price.value="";
+
+  localStorage.setItem("orders", JSON.stringify(orders));
+  clearForm();
   renderOrders();
+}
+
+function clearForm(){
+  customer.value="";
+  phone.value="";
+  address.value="";
+  product.value="";
+  price.value="";
 }
 
 function renderOrders(){
   ordersDiv.innerHTML="";
-  let sales=0;
+  let total = 0;
   const q = search.value.trim();
 
   orders
     .filter(o => o.phone.includes(q))
     .forEach((o,i)=>{
-      sales += o.price;
+      total += o.price;
       ordersDiv.innerHTML += `
         <div class="order">
           <div class="order-header" onclick="toggleDetails(${i})">
-            <span class="order-id">${o.id}</span>
-            <span>${o.customer} — ${o.price}</span>
+            <span>${o.customer} - ${o.price}</span>
+            <span>${o.id}</span>
           </div>
           <div class="details hidden" id="details-${i}">
             <p>📞 ${o.phone}</p>
             <p>📍 ${o.address}</p>
             <p>📦 ${o.product}</p>
-            <div class="actions">
-              <button class="btn btn-secondary" onclick="editOrder(${i});event.stopPropagation()">تعديل</button>
-              <button class="btn btn-danger" onclick="deleteOrder(${i});event.stopPropagation()">حذف</button>
-            </div>
+            <button class="btn-edit" onclick="editOrder(${i});event.stopPropagation()">تعديل</button>
+            <button class="btn-del" onclick="deleteOrder(${i});event.stopPropagation()">حذف</button>
           </div>
         </div>
       `;
     });
 
-  totalSales.innerText = sales;
-  calculateNet();
-}
-
-  totalSales.innerText=sales;
-  calculateNet();
+  totalSales.innerText = total;
+  calcNet();
 }
 
 function toggleDetails(i){
@@ -266,55 +234,60 @@ function toggleDetails(i){
 }
 
 function editOrder(i){
-  const o=orders[i];
+  const o = orders[i];
   customer.value=o.customer;
   phone.value=o.phone;
   address.value=o.address;
   product.value=o.product;
   price.value=o.price;
-  editOrderIndex=i;
+  editIndex=i;
 }
 
 function deleteOrder(i){
   if(confirm("حذف الأوردر؟")){
     orders.splice(i,1);
-    localStorage.setItem("orders",JSON.stringify(orders));
+    localStorage.setItem("orders", JSON.stringify(orders));
     renderOrders();
   }
 }
 
 function addExpense(){
-  if(!expenseNote.value||!expenseAmount.value) return;
-  expenses.push({note:expenseNote.value,amount:Number(expenseAmount.value)});
-  localStorage.setItem("expenses",JSON.stringify(expenses));
-  expenseNote.value=expenseAmount.value="";
+  if(!expenseNote.value || !expenseAmount.value) return;
+  expenses.push({
+    note: expenseNote.value,
+    amount: Number(expenseAmount.value)
+  });
+  localStorage.setItem("expenses", JSON.stringify(expenses));
+  expenseNote.value="";
+  expenseAmount.value="";
   renderExpenses();
 }
 
 function renderExpenses(){
   expensesDiv.innerHTML="";
-  let expTotal=0;
+  let total = 0;
   expenses.forEach((e,i)=>{
-    expTotal+=e.amount;
-    expensesDiv.innerHTML+=`
+    total += e.amount;
+    expensesDiv.innerHTML += `
       <div class="order">
-        ${e.note} — ${e.amount}
-        <button class="btn btn-danger" onclick="deleteExpense(${i})">حذف</button>
-      </div>`;
+        ${e.note} - ${e.amount}
+        <button class="btn-del" onclick="deleteExpense(${i})">حذف</button>
+      </div>
+    `;
   });
-  totalExpenses.innerText=expTotal;
-  calculateNet();
+  totalExpenses.innerText = total;
+  calcNet();
 }
 
 function deleteExpense(i){
   expenses.splice(i,1);
-  localStorage.setItem("expenses",JSON.stringify(expenses));
+  localStorage.setItem("expenses", JSON.stringify(expenses));
   renderExpenses();
 }
 
-function calculateNet(){
-  netTotal.innerText=
-    Number(totalSales.innerText)-Number(totalExpenses.innerText);
+function calcNet(){
+  netTotal.innerText =
+    Number(totalSales.innerText) - Number(totalExpenses.innerText);
 }
 </script>
 
