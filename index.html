@@ -1,203 +1,71 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>MT FACTORY</title>
-
+<title>Order System</title>
 <style>
-body{margin:0;font-family:Tahoma,Arial;background:#f4f6f9}
-header{background:#0b3c88;color:#fff;padding:20px;text-align:center;font-size:24px}
-.container{max-width:1200px;margin:auto;padding:20px}
-.card{background:#fff;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 6px 14px rgba(0,0,0,.08)}
-input{width:100%;padding:10px;margin:6px 0;border:1px solid #ddd;border-radius:8px}
-button{padding:8px 14px;border:none;border-radius:6px;cursor:pointer}
-.btn{background:#0b3c88;color:#fff}
-.btn-red{background:#c0392b;color:#fff}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
-th{background:#eef3ff}
-.hidden{display:none}
-.totalBox{background:#0b3c88;color:#fff;padding:20px;border-radius:12px}
-.loginBox{max-width:400px;margin:120px auto}
+body{font-family:Arial;background:#f5f5f5}
+.container{max-width:900px;margin:30px auto;background:#fff;padding:20px}
+input,button{padding:8px;margin:5px;width:100%}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{border:1px solid #ddd;padding:8px;text-align:center}
+th{background:#eee}
 </style>
 </head>
-
 <body>
 
-<header>MT FACTORY</header>
+<div class="container">
+<h2>Order System</h2>
 
-<div class="card loginBox" id="loginBox">
-  <h3>تسجيل الدخول</h3>
-  <input type="password" id="password" placeholder="كلمة المرور">
-  <button class="btn" onclick="login()">دخول</button>
-</div>
+<input id="name" placeholder="Customer Name">
+<input id="phone" placeholder="Phone">
+<input id="product" placeholder="Product">
+<input id="price" type="number" placeholder="Price">
+<button onclick="addOrder()">Add Order</button>
 
-<div class="container hidden" id="app">
-
-<!-- ORDER FORM -->
-<div class="card">
-<h3>إضافة أوردر</h3>
-<input id="customer" placeholder="اسم العميل">
-<input id="phone" placeholder="رقم الموبايل">
-<input id="product" placeholder="المنتج">
-<input id="price" type="number" placeholder="سعر المنتج">
-<input id="shipping" type="number" placeholder="الشحن">
-<input id="install" type="number" placeholder="التركيب">
-<input id="discount" type="number" placeholder="خصم">
-<button class="btn" onclick="addOrder()">حفظ الأوردر</button>
-</div>
-
-<!-- SEARCH -->
-<div class="card">
-<input id="search" placeholder="بحث برقم الموبايل" oninput="renderOrders()">
-</div>
-
-<!-- ORDERS TABLE -->
-<div class="card">
 <table>
 <thead>
 <tr>
-<th>العميل</th>
-<th>الموبايل</th>
-<th>المنتج</th>
-<th>الإجمالي</th>
-<th>تحكم</th>
+<th>Name</th><th>Phone</th><th>Product</th><th>Price</th><th>Delete</th>
 </tr>
 </thead>
-<tbody id="ordersTable"></tbody>
+<tbody id="orders"></tbody>
 </table>
-</div>
-
-<!-- CASH OUT -->
-<div class="card">
-<h3>Cash Out</h3>
-<input id="cashAmount" type="number" placeholder="المبلغ">
-<input id="cashNote" placeholder="اتصرف في إيه">
-<input id="cashDate" type="date">
-<button class="btn" onclick="addCash()">إضافة</button>
-
-<table>
-<thead>
-<tr><th>المبلغ</th><th>السبب</th><th>التاريخ</th><th>حذف</th></tr>
-</thead>
-<tbody id="cashTable"></tbody>
-</table>
-</div>
-
-<!-- TOTALS -->
-<div class="totalBox">
-<p>إجمالي المبيعات: <b id="sales">0</b></p>
-<p>إجمالي الكاش أوت: <b id="cashTotal">0</b></p>
-<p>الصافي: <b id="net">0</b></p>
-</div>
-
 </div>
 
 <script>
-const PASSWORD="factory123";
-
-let orders=JSON.parse(localStorage.getItem("orders")||"[]");
-let cash=JSON.parse(localStorage.getItem("cash")||"[]");
-
-function login(){
- if(password.value===PASSWORD){
-  loginBox.classList.add("hidden");
-  app.classList.remove("hidden");
-  renderOrders(); renderCash();
- } else alert("كلمة المرور خطأ");
-}
+let orders = JSON.parse(localStorage.getItem("orders")||"[]");
 
 function addOrder(){
- const total=(+price.value||0)+(+shipping.value||0)+(+install.value||0)-(+discount.value||0);
  orders.push({
-  customer:customer.value,
+  name:name.value,
   phone:phone.value,
   product:product.value,
-  total:total
+  price:price.value
  });
  localStorage.setItem("orders",JSON.stringify(orders));
- customer.value=phone.value=product.value=price.value=shipping.value=install.value=discount.value="";
- renderOrders();
+ render();
 }
 
-function renderOrders(){
- const body=document.getElementById("ordersTable");
- body.innerHTML="";
- let sum=0;
- const q=search.value||"";
- for(let i=0;i<orders.length;i++){
-  const o=orders[i];
-  if(!o.phone.includes(q)) continue;
-  sum+=o.total;
-  const tr=document.createElement("tr");
-  tr.innerHTML=
-   "<td>"+o.customer+"</td>"+
+function render(){
+ ordersTable.innerHTML="";
+ orders.forEach((o,i)=>{
+  ordersTable.innerHTML+=
+   "<tr>"+
+   "<td>"+o.name+"</td>"+
    "<td>"+o.phone+"</td>"+
    "<td>"+o.product+"</td>"+
-   "<td>"+o.total+"</td>"+
-   "<td><button class='btn' onclick='invoice("+i+")'>فاتورة</button> <button class='btn-red' onclick='delOrder("+i+")'>حذف</button></td>";
-  body.appendChild(tr);
- }
- sales.innerText=sum;
- updateNet();
+   "<td>"+o.price+"</td>"+
+   "<td><button onclick='del("+i+")'>X</button></td>"+
+   "</tr>";
+ });
 }
-
-function delOrder(i){
- if(confirm("حذف الأوردر؟")){
-  orders.splice(i,1);
-  localStorage.setItem("orders",JSON.stringify(orders));
-  renderOrders();
- }
+function del(i){
+ orders.splice(i,1);
+ localStorage.setItem("orders",JSON.stringify(orders));
+ render();
 }
-
-function addCash(){
- cash.push({amount:+cashAmount.value,note:cashNote.value,date:cashDate.value});
- localStorage.setItem("cash",JSON.stringify(cash));
- cashAmount.value=cashNote.value=cashDate.value="";
- renderCash();
-}
-
-function renderCash(){
- const body=document.getElementById("cashTable");
- body.innerHTML="";
- let t=0;
- for(let i=0;i<cash.length;i++){
-  const c=cash[i];
-  t+=c.amount;
-  const tr=document.createElement("tr");
-  tr.innerHTML=
-   "<td>"+c.amount+"</td>"+
-   "<td>"+c.note+"</td>"+
-   "<td>"+c.date+"</td>"+
-   "<td><button class='btn-red' onclick='delCash("+i+")'>X</button></td>";
-  body.appendChild(tr);
- }
- cashTotal.innerText=t;
- updateNet();
-}
-
-function delCash(i){
- cash.splice(i,1);
- localStorage.setItem("cash",JSON.stringify(cash));
- renderCash();
-}
-
-function updateNet(){
- net.innerText = sales.innerText - cashTotal.innerText;
-}
-
-function invoice(i){
- const o=orders[i];
- const w=window.open("");
- w.document.write(
-  "<h2>MT FACTORY</h2>"+
-  "<p>العميل: "+o.customer+"</p>"+
-  "<p>الموبايل: "+o.phone+"</p>"+
-  "<p>المنتج: "+o.product+"</p>"+
-  "<h3>الإجمالي: "+o.total+"</h3>"+
-  "<script>window.print()</script>"
- );
-}
+render();
 </script>
 
 </body>
