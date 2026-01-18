@@ -5,62 +5,20 @@
 <title>MT FACTORY</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Tahoma,Arial;
-  background:#f4f6f9;
-}
-header{
-  background:#0b3c88;
-  color:#fff;
-  padding:20px;
-  text-align:center;
-  font-size:24px;
-}
-.container{max-width:1200px;margin:auto;padding:20px}
-.card{
-  background:#fff;
-  padding:20px;
-  border-radius:14px;
-  margin-bottom:20px;
-  box-shadow:0 8px 18px rgba(0,0,0,.08);
-}
-input,textarea{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border:1px solid #ddd;
-  border-radius:8px;
-}
-button{
-  padding:10px 16px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-}
+body{margin:0;font-family:Tahoma;background:#f4f6f9}
+header{background:#0b3c88;color:#fff;padding:20px;text-align:center;font-size:24px}
+.container{max-width:1100px;margin:auto;padding:20px}
+.card{background:#fff;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 6px 14px rgba(0,0,0,.08)}
+input{width:100%;padding:10px;margin:6px 0;border:1px solid #ddd;border-radius:8px}
+button{padding:10px 15px;border:none;border-radius:8px;cursor:pointer}
 .btn{background:#0b3c88;color:#fff}
 .btn-red{background:#c0392b;color:#fff}
-.tabs button{margin-left:5px}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th,td{
-  padding:10px;
-  border-bottom:1px solid #eee;
-}
-th{background:#eef3ff}
 .hidden{display:none}
-.totalBox{
-  background:#0b3c88;
-  color:#fff;
-  padding:20px;
-  border-radius:14px;
-}
-.loginBox{
-  max-width:400px;
-  margin:120px auto;
-}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #eee;text-align:center}
+th{background:#eef3ff}
+.total{background:#0b3c88;color:#fff;padding:20px;border-radius:12px}
+.loginBox{max-width:400px;margin:120px auto}
 </style>
 </head>
 
@@ -76,55 +34,32 @@ th{background:#eef3ff}
 
 <div class="container hidden" id="app">
 
-<div class="tabs card">
-  <button class="btn" onclick="showTab('orders')">الأوردرات</button>
-  <button class="btn" onclick="showTab('cash')">Cash Out</button>
-</div>
-
-<!-- ORDERS -->
-<div id="ordersTab" class="card">
+<div class="card">
 <h3>إضافة أوردر</h3>
 <input id="customer" placeholder="اسم العميل">
 <input id="phone" placeholder="رقم الموبايل">
 <input id="product" placeholder="المنتج">
-<input id="price" type="number" placeholder="سعر المنتج">
-<input id="shipping" type="number" placeholder="الشحن">
-<input id="install" type="number" placeholder="التركيب">
-<input id="discount" type="number" placeholder="خصم">
-<button class="btn" onclick="saveOrder()">حفظ</button>
+<input id="totalPrice" type="number" placeholder="إجمالي السعر">
+<button class="btn" onclick="addOrder()">حفظ الأوردر</button>
+</div>
 
-<hr>
+<div class="card">
 <input id="search" placeholder="بحث برقم الموبايل" oninput="renderOrders()">
-
 <table>
 <thead>
 <tr>
-<th>العميل</th><th>الموبايل</th><th>الإجمالي</th><th>تحكم</th>
+<th>العميل</th>
+<th>الموبايل</th>
+<th>الإجمالي</th>
+<th>حذف</th>
 </tr>
 </thead>
-<tbody id="orders"></tbody>
+<tbody id="ordersTable"></tbody>
 </table>
 </div>
 
-<!-- CASH OUT -->
-<div id="cashTab" class="card hidden">
-<h3>Cash Out</h3>
-<input id="cashAmount" type="number" placeholder="المبلغ">
-<input id="cashNote" placeholder="اتصرف في إيه">
-<button class="btn" onclick="addCash()">إضافة</button>
-
-<table>
-<thead>
-<tr><th>المبلغ</th><th>السبب</th><th>حذف</th></tr>
-</thead>
-<tbody id="cashList"></tbody>
-</table>
-</div>
-
-<div class="totalBox">
-<p>إجمالي المبيعات: <b id="sales">0</b></p>
-<p>إجمالي الكاش أوت: <b id="cashTotal">0</b></p>
-<p>الصافي: <b id="net">0</b></p>
+<div class="total">
+إجمالي المبيعات: <span id="sum">0</span>
 </div>
 
 </div>
@@ -132,111 +67,50 @@ th{background:#eef3ff}
 <script>
 const PASSWORD="factory123";
 let orders=JSON.parse(localStorage.getItem("orders")||"[]");
-let cash=JSON.parse(localStorage.getItem("cash")||"[]");
 
 function login(){
  if(password.value===PASSWORD){
-   loginBox.classList.add("hidden");
-   app.classList.remove("hidden");
-   renderOrders(); renderCash();
+  loginBox.classList.add("hidden");
+  app.classList.remove("hidden");
+  renderOrders();
  } else alert("كلمة المرور خطأ");
 }
 
-function showTab(t){
- ordersTab.classList.toggle("hidden",t!=="orders");
- cashTab.classList.toggle("hidden",t!=="cash");
-}
-
-function saveOrder(){
- const total=+price.value+ +shipping.value+ +install.value- +discount.value;
+function addOrder(){
  orders.push({
   customer:customer.value,
   phone:phone.value,
-  product:product.value,
-  total
+  total:+totalPrice.value
  });
  localStorage.setItem("orders",JSON.stringify(orders));
- clearForm(); renderOrders();
-}
-
-function clearForm(){
- customer.value=phone.value=product.value=
- price.value=shipping.value=install.value=discount.value="";
+ customer.value=phone.value=product.value=totalPrice.value="";
+ renderOrders();
 }
 
 function renderOrders(){
- ordersDiv.innerHTML="";
- let sum=0;
+ const body=document.getElementById("ordersTable");
+ body.innerHTML="";
+ let s=0;
  const q=search.value||"";
  orders.filter(o=>o.phone.includes(q)).forEach((o,i)=>{
-  sum+=o.total;
-  ordersDiv.innerHTML+=`
-   <tr>
-    <td>${o.customer}</td>
-    <td>${o.phone}</td>
-    <td>${o.total}</td>
-    <td>
-     <button class="btn" onclick="invoice(${i})">PDF</button>
-     <button class="btn-red" onclick="delOrder(${i})">حذف</button>
-    </td>
-   </tr>`;
+  s+=o.total;
+  const tr=document.createElement("tr");
+
+  tr.innerHTML=
+   "<td>"+o.customer+"</td>"+
+   "<td>"+o.phone+"</td>"+
+   "<td>"+o.total+"</td>"+
+   "<td><button class='btn-red' onclick='del("+i+")'>X</button></td>";
+
+  body.appendChild(tr);
  });
- sales.innerText=sum;
- updateNet();
+ sum.innerText=s;
 }
 
-function delOrder(i){
- if(confirm("حذف الأوردر؟")){
-  orders.splice(i,1);
-  localStorage.setItem("orders",JSON.stringify(orders));
-  renderOrders();
- }
-}
-
-function addCash(){
- cash.push({amount:+cashAmount.value,note:cashNote.value});
- localStorage.setItem("cash",JSON.stringify(cash));
- cashAmount.value=cashNote.value="";
- renderCash();
-}
-
-function renderCash(){
- cashList.innerHTML="";
- let t=0;
- cash.forEach((c,i)=>{
-  t+=c.amount;
-  cashList.innerHTML+=`
-   <tr>
-    <td>${c.amount}</td>
-    <td>${c.note}</td>
-    <td><button class="btn-red" onclick="delCash(${i})">X</button></td>
-   </tr>`;
- });
- cashTotal.innerText=t;
- updateNet();
-}
-
-function delCash(i){
- cash.splice(i,1);
- localStorage.setItem("cash",JSON.stringify(cash));
- renderCash();
-}
-
-function updateNet(){
- net.innerText= sales.innerText - cashTotal.innerText;
-}
-
-function invoice(i){
- const o=orders[i];
- const w=window.open("");
- w.document.write(`
- <h2>MT FACTORY</h2>
- <p>العميل: ${o.customer}</p>
- <p>الموبايل: ${o.phone}</p>
- <p>المنتج: ${o.product}</p>
- <h3>الإجمالي: ${o.total}</h3>
- <script>window.print()</script>
- `);
+function del(i){
+ orders.splice(i,1);
+ localStorage.setItem("orders",JSON.stringify(orders));
+ renderOrders();
 }
 </script>
 
