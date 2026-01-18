@@ -4,64 +4,175 @@
 <meta charset="UTF-8">
 <title>MT FACTORY - نظام الأوردرات</title>
 <style>
-body{font-family:Arial;background:#f4f6f9;margin:0}
-header{background:#0b3c88;color:#fff;padding:15px;text-align:center}
-.box{background:#fff;margin:20px;padding:20px;border-radius:8px}
-input,textarea,button{padding:8px;margin:5px;width:100%}
-button{background:#0b3c88;color:#fff;border:none;cursor:pointer}
-.order{border-bottom:1px solid #ddd;padding:10px;cursor:pointer}
+:root{
+  --blue:#0b3c88;
+  --blue-light:#eaf0ff;
+  --gray:#f4f6f9;
+  --danger:#c0392b;
+  --success:#27ae60;
+}
+*{box-sizing:border-box}
+body{
+  font-family:Tahoma, Arial;
+  background:var(--gray);
+  margin:0;
+  color:#333;
+}
+header{
+  background:var(--blue);
+  color:#fff;
+  padding:18px;
+  text-align:center;
+  font-size:22px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+}
+.card h3{
+  margin-top:0;
+  color:var(--blue);
+}
+input,textarea{
+  width:100%;
+  padding:10px 12px;
+  margin:6px 0;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:14px;
+}
+input:focus,textarea:focus{
+  outline:none;
+  border-color:var(--blue);
+}
+.btn{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-secondary{background:#bdc3c7;color:#2c3e50}
+.btn + .btn{margin-right:6px}
 .hidden{display:none}
-.totalBox{background:#eef3ff;padding:15px;border-radius:6px;margin-top:15px}
-.actions button{width:auto;margin:5px}
-.details{background:#f9fbff;padding:10px;margin-top:10px;border-radius:6px}
+
+.order{
+  border:1px solid #e6e6e6;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:10px;
+  transition:.2s;
+}
+.order:hover{background:#fafcff}
+.order-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+}
+.order-id{
+  font-weight:bold;
+  color:var(--blue);
+}
+.details{
+  background:var(--blue-light);
+  border-radius:8px;
+  padding:10px;
+  margin-top:10px;
+}
+.actions{
+  margin-top:10px;
+}
+.totalBox{
+  background:linear-gradient(135deg,var(--blue),#1f5fd1);
+  color:#fff;
+  border-radius:14px;
+  padding:20px;
+}
+.totalBox p{
+  margin:6px 0;
+  font-size:16px;
+}
+.totalBox b{font-size:20px}
+.login-card{
+  max-width:400px;
+  margin:120px auto;
+}
+.section-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+@media(max-width:800px){
+  .section-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 
 <body>
 
-<header><h2>MT FACTORY</h2></header>
+<header>MT FACTORY</header>
 
-<div class="box" id="loginBox">
-<h3>تسجيل الدخول</h3>
-<input type="password" id="password" placeholder="كلمة المرور">
-<button onclick="login()">دخول</button>
+<!-- LOGIN -->
+<div id="loginBox" class="card login-card">
+  <h3>تسجيل الدخول</h3>
+  <input type="password" id="password" placeholder="كلمة المرور">
+  <button class="btn btn-primary" onclick="login()">دخول</button>
 </div>
 
-<div class="box hidden" id="app">
+<!-- APP -->
+<div id="app" class="hidden container">
 
-<h3>إضافة / تعديل أوردر</h3>
-<input id="customer" placeholder="اسم العميل">
-<input id="phone" placeholder="رقم الموبايل">
-<input id="address" placeholder="العنوان">
-<input id="product" placeholder="المنتج">
-<input id="price" type="number" placeholder="السعر">
-<button onclick="saveOrder()">حفظ الأوردر</button>
+<div class="section-grid">
 
-<hr>
+  <div class="card">
+    <h3>إضافة / تعديل أوردر</h3>
+    <input id="customer" placeholder="اسم العميل">
+    <input id="phone" placeholder="رقم الموبايل">
+    <input id="address" placeholder="العنوان">
+    <input id="product" placeholder="المنتج">
+    <input id="price" type="number" placeholder="السعر">
+    <button class="btn btn-primary" onclick="saveOrder()">حفظ الأوردر</button>
+  </div>
 
-<h3>بحث برقم الأوردر</h3>
-<input id="search" placeholder="ORD-0001" oninput="renderOrders()">
+  <div class="card">
+    <h3>Cash Out (مصروفات)</h3>
+    <input id="expenseNote" placeholder="اتصرفت في إيه؟">
+    <input id="expenseAmount" type="number" placeholder="المبلغ">
+    <button class="btn btn-secondary" onclick="addExpense()">إضافة مصروف</button>
+    <div id="expenses"></div>
+  </div>
 
-<hr>
+</div>
 
-<h3>الأوردرات</h3>
-<div id="orders"></div>
+<div class="card">
+  <h3>بحث برقم الأوردر</h3>
+  <input id="search" placeholder="ORD-0001" oninput="renderOrders()">
+</div>
 
-<hr>
+<div class="card">
+  <h3>الأوردرات</h3>
+  <div id="orders"></div>
+</div>
 
-<h3>Cash Out (مصروفات)</h3>
-<input id="expenseNote" placeholder="اتصرفت في إيه؟">
-<input id="expenseAmount" type="number" placeholder="المبلغ">
-<button onclick="addExpense()">إضافة مصروف</button>
-<div id="expenses"></div>
-
-<hr>
-
-<h3>الإجماليات</h3>
 <div class="totalBox">
-<p>إجمالي الأوردرات: <b><span id="totalSales">0</span></b></p>
-<p>إجمالي المصروفات: <b><span id="totalExpenses">0</span></b></p>
-<p>الصافي بعد الخصم: <b><span id="netTotal">0</span></b></p>
+  <p>إجمالي الأوردرات</p>
+  <b><span id="totalSales">0</span></b>
+  <p>إجمالي المصروفات</p>
+  <b><span id="totalExpenses">0</span></b>
+  <p>الصافي</p>
+  <b><span id="netTotal">0</span></b>
 </div>
 
 </div>
@@ -79,8 +190,7 @@ function login(){
   if(password.value===PASSWORD){
     loginBox.classList.add("hidden");
     app.classList.remove("hidden");
-    renderOrders(); 
-    renderExpenses();
+    renderOrders(); renderExpenses();
   } else alert("كلمة المرور خطأ");
 }
 
@@ -110,14 +220,9 @@ function saveOrder(){
     });
     editOrderIndex=null;
   }
-
   localStorage.setItem("orders",JSON.stringify(orders));
-  clearOrderForm();
-  renderOrders();
-}
-
-function clearOrderForm(){
   customer.value=phone.value=address.value=product.value=price.value="";
+  renderOrders();
 }
 
 function renderOrders(){
@@ -128,18 +233,21 @@ function renderOrders(){
   orders.filter(o=>o.id.toLowerCase().includes(q)).forEach((o,i)=>{
     sales+=o.price;
     ordersDiv.innerHTML+=`
-    <div class="order" onclick="toggleDetails(${i})">
-      <b>${o.id}</b> - ${o.customer} | ${o.price}
-      <div class="details hidden" id="details-${i}">
-        <p>موبايل: ${o.phone}</p>
-        <p>عنوان: ${o.address}</p>
-        <p>منتج: ${o.product}</p>
-        <div class="actions">
-          <button onclick="editOrder(${i});event.stopPropagation()">تعديل</button>
-          <button onclick="deleteOrder(${i});event.stopPropagation()">حذف</button>
+      <div class="order">
+        <div class="order-header" onclick="toggleDetails(${i})">
+          <span class="order-id">${o.id}</span>
+          <span>${o.customer} — ${o.price}</span>
         </div>
-      </div>
-    </div>`;
+        <div class="details hidden" id="details-${i}">
+          <p>📞 ${o.phone}</p>
+          <p>📍 ${o.address}</p>
+          <p>📦 ${o.product}</p>
+          <div class="actions">
+            <button class="btn btn-secondary" onclick="editOrder(${i});event.stopPropagation()">تعديل</button>
+            <button class="btn btn-danger" onclick="deleteOrder(${i});event.stopPropagation()">حذف</button>
+          </div>
+        </div>
+      </div>`;
   });
 
   totalSales.innerText=sales;
@@ -183,19 +291,12 @@ function renderExpenses(){
     expTotal+=e.amount;
     expensesDiv.innerHTML+=`
       <div class="order">
-        ${e.note} - ${e.amount}
-        <button onclick="editExpense(${i})">تعديل</button>
-        <button onclick="deleteExpense(${i})">حذف</button>
+        ${e.note} — ${e.amount}
+        <button class="btn btn-danger" onclick="deleteExpense(${i})">حذف</button>
       </div>`;
   });
   totalExpenses.innerText=expTotal;
   calculateNet();
-}
-
-function editExpense(i){
-  expenseNote.value=expenses[i].note;
-  expenseAmount.value=expenses[i].amount;
-  expenses.splice(i,1);
 }
 
 function deleteExpense(i){
