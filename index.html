@@ -228,28 +228,34 @@ function saveOrder(){
 function renderOrders(){
   ordersDiv.innerHTML="";
   let sales=0;
-  const q=search.value.toLowerCase();
+  const q = search.value.trim();
 
-  orders.filter(o => o.phone.includes(q))
-
-    sales+=o.price;
-    ordersDiv.innerHTML+=`
-      <div class="order">
-        <div class="order-header" onclick="toggleDetails(${i})">
-          <span class="order-id">${o.id}</span>
-          <span>${o.customer} — ${o.price}</span>
-        </div>
-        <div class="details hidden" id="details-${i}">
-          <p>📞 ${o.phone}</p>
-          <p>📍 ${o.address}</p>
-          <p>📦 ${o.product}</p>
-          <div class="actions">
-            <button class="btn btn-secondary" onclick="editOrder(${i});event.stopPropagation()">تعديل</button>
-            <button class="btn btn-danger" onclick="deleteOrder(${i});event.stopPropagation()">حذف</button>
+  orders
+    .filter(o => o.phone.includes(q))
+    .forEach((o,i)=>{
+      sales += o.price;
+      ordersDiv.innerHTML += `
+        <div class="order">
+          <div class="order-header" onclick="toggleDetails(${i})">
+            <span class="order-id">${o.id}</span>
+            <span>${o.customer} — ${o.price}</span>
+          </div>
+          <div class="details hidden" id="details-${i}">
+            <p>📞 ${o.phone}</p>
+            <p>📍 ${o.address}</p>
+            <p>📦 ${o.product}</p>
+            <div class="actions">
+              <button class="btn btn-secondary" onclick="editOrder(${i});event.stopPropagation()">تعديل</button>
+              <button class="btn btn-danger" onclick="deleteOrder(${i});event.stopPropagation()">حذف</button>
+            </div>
           </div>
         </div>
-      </div>`;
-  });
+      `;
+    });
+
+  totalSales.innerText = sales;
+  calculateNet();
+}
 
   totalSales.innerText=sales;
   calculateNet();
