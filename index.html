@@ -230,7 +230,8 @@ function renderOrders(){
   let sales=0;
   const q=search.value.toLowerCase();
 
-  orders.filter(o=>o.id.toLowerCase().includes(q)).forEach((o,i)=>{
+  orders.filter(o => o.phone.includes(q))
+
     sales+=o.price;
     ordersDiv.innerHTML+=`
       <div class="order">
