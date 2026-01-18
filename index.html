@@ -5,58 +5,66 @@
 <title>MT FACTORY</title>
 
 <style>
+:root{
+  --blue:#0b3c88;
+  --light:#f4f6f9;
+  --card:#ffffff;
+  --danger:#c0392b;
+  --gray:#7f8c8d;
+}
+*{box-sizing:border-box}
 body{
   margin:0;
   font-family:Tahoma, Arial;
-  background:#f4f6f9;
+  background:var(--light);
 }
 header{
-  background:#0b3c88;
+  background:linear-gradient(135deg,#0b3c88,#1e5fd1);
   color:#fff;
-  padding:15px;
+  padding:20px;
   text-align:center;
-  font-size:22px;
+  font-size:24px;
 }
 .container{
-  max-width:1100px;
+  max-width:1200px;
   margin:auto;
   padding:20px;
 }
 .card{
-  background:#fff;
-  border-radius:10px;
+  background:var(--card);
+  border-radius:14px;
   padding:20px;
   margin-bottom:20px;
-  box-shadow:0 4px 10px rgba(0,0,0,.08);
+  box-shadow:0 8px 18px rgba(0,0,0,.08);
 }
 h3{
   margin-top:0;
-  color:#0b3c88;
+  color:var(--blue);
 }
-input, textarea{
+input{
   width:100%;
   padding:10px;
   margin:6px 0;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:14px;
+  border:1px solid #ddd;
+  border-radius:8px;
 }
 button{
-  padding:10px 14px;
+  padding:10px 16px;
   border:none;
-  border-radius:6px;
+  border-radius:8px;
   cursor:pointer;
   font-size:14px;
 }
-.btn-main{background:#0b3c88;color:#fff}
-.btn-del{background:#c0392b;color:#fff}
-.btn-edit{background:#7f8c8d;color:#fff}
+.btn-main{background:var(--blue);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-gray{background:var(--gray);color:#fff}
 .hidden{display:none}
+
 .order{
-  border:1px solid #ddd;
-  border-radius:8px;
-  padding:10px;
-  margin-bottom:8px;
+  border:1px solid #eee;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:10px;
 }
 .order-header{
   display:flex;
@@ -65,21 +73,28 @@ button{
   font-weight:bold;
 }
 .details{
-  background:#eef3ff;
   margin-top:10px;
+  background:#eef3ff;
   padding:10px;
-  border-radius:6px;
+  border-radius:8px;
 }
 .totalBox{
-  background:#0b3c88;
+  background:linear-gradient(135deg,#0b3c88,#1e5fd1);
   color:#fff;
   padding:20px;
-  border-radius:10px;
+  border-radius:16px;
 }
-.totalBox p{margin:6px 0}
 .loginBox{
   max-width:400px;
   margin:120px auto;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -98,13 +113,17 @@ button{
 <!-- APP -->
 <div class="container hidden" id="app">
 
+<div class="grid">
+
 <div class="card">
   <h3>إضافة / تعديل أوردر</h3>
   <input id="customer" placeholder="اسم العميل">
   <input id="phone" placeholder="رقم الموبايل">
-  <input id="address" placeholder="العنوان">
   <input id="product" placeholder="المنتج">
-  <input id="price" type="number" placeholder="السعر">
+  <input id="price" type="number" placeholder="سعر المنتج">
+  <input id="shipping" type="number" placeholder="الشحن">
+  <input id="install" type="number" placeholder="خدمة التركيب">
+  <input id="discount" type="number" placeholder="خصم">
   <button class="btn-main" onclick="saveOrder()">حفظ الأوردر</button>
 </div>
 
@@ -113,181 +132,120 @@ button{
   <input id="search" placeholder="اكتب رقم الموبايل" oninput="renderOrders()">
 </div>
 
+</div>
+
 <div class="card">
   <h3>الأوردرات</h3>
   <div id="orders"></div>
 </div>
 
-<div class="card">
-  <h3>Cash Out (مصروفات)</h3>
-  <input id="expenseNote" placeholder="اتصرفت في إيه؟">
-  <input id="expenseAmount" type="number" placeholder="المبلغ">
-  <button class="btn-edit" onclick="addExpense()">إضافة مصروف</button>
-  <div id="expenses"></div>
-</div>
-
 <div class="totalBox">
-  <p>إجمالي الأوردرات: <b><span id="totalSales">0</span></b></p>
-  <p>إجمالي المصروفات: <b><span id="totalExpenses">0</span></b></p>
-  <p>الصافي: <b><span id="netTotal">0</span></b></p>
+  <p>إجمالي المبيعات: <b><span id="totalSales">0</span></b></p>
 </div>
 
 </div>
 
 <script>
-const PASSWORD = "factory123";
-
-let orders = JSON.parse(localStorage.getItem("orders") || "[]");
-let expenses = JSON.parse(localStorage.getItem("expenses") || "[]");
-let editIndex = null;
-
-const ordersDiv = document.getElementById("orders");
-const expensesDiv = document.getElementById("expenses");
+const PASSWORD="factory123";
+let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+let editIndex=null;
 
 function login(){
-  if(password.value === PASSWORD){
+  if(password.value===PASSWORD){
     loginBox.classList.add("hidden");
     app.classList.remove("hidden");
     renderOrders();
-    renderExpenses();
-  } else {
-    alert("كلمة المرور خطأ");
-  }
+  } else alert("كلمة المرور خطأ");
 }
 
 function generateId(){
-  return "ORD-" + String(orders.length + 1).padStart(4,"0");
+  return "ORD-"+String(orders.length+1).padStart(4,"0");
 }
 
 function saveOrder(){
-  if(!customer.value || !phone.value || !price.value){
-    alert("أكمل البيانات");
-    return;
-  }
+  const total =
+    Number(price.value)+
+    Number(shipping.value||0)+
+    Number(install.value||0)-
+    Number(discount.value||0);
 
-  if(editIndex === null){
-    orders.push({
-      id: generateId(),
-      customer: customer.value,
-      phone: phone.value,
-      address: address.value,
-      product: product.value,
-      price: Number(price.value)
-    });
-  } else {
-    orders[editIndex] = {
-      ...orders[editIndex],
-      customer: customer.value,
-      phone: phone.value,
-      address: address.value,
-      product: product.value,
-      price: Number(price.value)
-    };
-    editIndex = null;
-  }
+  const data={
+    id:generateId(),
+    customer:customer.value,
+    phone:phone.value,
+    product:product.value,
+    price:Number(price.value),
+    shipping:Number(shipping.value||0),
+    install:Number(install.value||0),
+    discount:Number(discount.value||0),
+    total:total
+  };
 
-  localStorage.setItem("orders", JSON.stringify(orders));
-  clearForm();
-  renderOrders();
+  if(editIndex===null) orders.push(data);
+  else orders[editIndex]=data, editIndex=null;
+
+  localStorage.setItem("orders",JSON.stringify(orders));
+  clearForm(); renderOrders();
 }
 
 function clearForm(){
-  customer.value="";
-  phone.value="";
-  address.value="";
-  product.value="";
-  price.value="";
+  customer.value=phone.value=product.value=
+  price.value=shipping.value=install.value=discount.value="";
 }
 
 function renderOrders(){
   ordersDiv.innerHTML="";
-  let total = 0;
-  const q = search.value.trim();
+  let sum=0;
+  const q=search.value.trim();
 
-  orders
-    .filter(o => o.phone.includes(q))
-    .forEach((o,i)=>{
-      total += o.price;
-      ordersDiv.innerHTML += `
-        <div class="order">
-          <div class="order-header" onclick="toggleDetails(${i})">
-            <span>${o.customer} - ${o.price}</span>
-            <span>${o.id}</span>
-          </div>
-          <div class="details hidden" id="details-${i}">
-            <p>📞 ${o.phone}</p>
-            <p>📍 ${o.address}</p>
-            <p>📦 ${o.product}</p>
-            <button class="btn-edit" onclick="editOrder(${i});event.stopPropagation()">تعديل</button>
-            <button class="btn-del" onclick="deleteOrder(${i});event.stopPropagation()">حذف</button>
-          </div>
-        </div>
-      `;
-    });
-
-  totalSales.innerText = total;
-  calcNet();
-}
-
-function toggleDetails(i){
-  document.getElementById("details-"+i).classList.toggle("hidden");
-}
-
-function editOrder(i){
-  const o = orders[i];
-  customer.value=o.customer;
-  phone.value=o.phone;
-  address.value=o.address;
-  product.value=o.product;
-  price.value=o.price;
-  editIndex=i;
-}
-
-function deleteOrder(i){
-  if(confirm("حذف الأوردر؟")){
-    orders.splice(i,1);
-    localStorage.setItem("orders", JSON.stringify(orders));
-    renderOrders();
-  }
-}
-
-function addExpense(){
-  if(!expenseNote.value || !expenseAmount.value) return;
-  expenses.push({
-    note: expenseNote.value,
-    amount: Number(expenseAmount.value)
-  });
-  localStorage.setItem("expenses", JSON.stringify(expenses));
-  expenseNote.value="";
-  expenseAmount.value="";
-  renderExpenses();
-}
-
-function renderExpenses(){
-  expensesDiv.innerHTML="";
-  let total = 0;
-  expenses.forEach((e,i)=>{
-    total += e.amount;
-    expensesDiv.innerHTML += `
-      <div class="order">
-        ${e.note} - ${e.amount}
-        <button class="btn-del" onclick="deleteExpense(${i})">حذف</button>
+  orders.filter(o=>o.phone.includes(q)).forEach((o,i)=>{
+    sum+=o.total;
+    ordersDiv.innerHTML+=`
+    <div class="order">
+      <div class="order-header" onclick="toggle(${i})">
+        <span>${o.customer} - ${o.total}</span>
+        <span>${o.id}</span>
       </div>
-    `;
+      <div class="details hidden" id="d${i}">
+        <p>📦 المنتج: ${o.product}</p>
+        <p>💰 سعر المنتج: ${o.price}</p>
+        <p>🚚 الشحن: ${o.shipping}</p>
+        <p>🛠 التركيب: ${o.install}</p>
+        <p>➖ الخصم: ${o.discount}</p>
+        <p><b>الإجمالي: ${o.total}</b></p>
+        <button class="btn-gray" onclick="edit(${i});event.stopPropagation()">تعديل</button>
+        <button class="btn-danger" onclick="del(${i});event.stopPropagation()">حذف</button>
+        <button class="btn-main" onclick="invoice(${i});event.stopPropagation()">فاتورة PDF</button>
+      </div>
+    </div>`;
   });
-  totalExpenses.innerText = total;
-  calcNet();
+
+  totalSales.innerText=sum;
 }
 
-function deleteExpense(i){
-  expenses.splice(i,1);
-  localStorage.setItem("expenses", JSON.stringify(expenses));
-  renderExpenses();
-}
+function toggle(i){document.getElementById("d"+i).classList.toggle("hidden")}
+function edit(i){const o=orders[i];editIndex=i;
+customer.value=o.customer;phone.value=o.phone;product.value=o.product;
+price.value=o.price;shipping.value=o.shipping;
+install.value=o.install;discount.value=o.discount}
+function del(i){if(confirm("حذف؟")){orders.splice(i,1);localStorage.setItem("orders",JSON.stringify(orders));renderOrders()}}
 
-function calcNet(){
-  netTotal.innerText =
-    Number(totalSales.innerText) - Number(totalExpenses.innerText);
+function invoice(i){
+  const o=orders[i];
+  const w=window.open("");
+  w.document.write(`
+  <h2>MT FACTORY</h2>
+  <p>Order ID: ${o.id}</p>
+  <p>Client: ${o.customer}</p>
+  <hr>
+  <p>Product: ${o.product}</p>
+  <p>Price: ${o.price}</p>
+  <p>Shipping: ${o.shipping}</p>
+  <p>Installation: ${o.install}</p>
+  <p>Discount: ${o.discount}</p>
+  <h3>Total: ${o.total}</h3>
+  <script>window.print()</script>
+  `);
 }
 </script>
 
