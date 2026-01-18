@@ -5,18 +5,10 @@
 <title>MT FACTORY</title>
 
 <style>
-:root{
-  --blue:#0b3c88;
-  --light:#f4f6f9;
-  --card:#ffffff;
-  --danger:#c0392b;
-  --gray:#7f8c8d;
-}
-*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Tahoma, Arial;
-  background:var(--light);
+  font-family:Tahoma,Arial;
+  background:#f4f6f9;
 }
 header{
   background:linear-gradient(135deg,#0b3c88,#1e5fd1);
@@ -26,18 +18,17 @@ header{
   font-size:24px;
 }
 .container{
-  max-width:1200px;
+  max-width:1100px;
   margin:auto;
   padding:20px;
 }
 .card{
-  background:var(--card);
+  background:#fff;
   border-radius:14px;
   padding:20px;
   margin-bottom:20px;
   box-shadow:0 8px 18px rgba(0,0,0,.08);
 }
-h3{margin-top:0;color:var(--blue)}
 input{
   width:100%;
   padding:10px;
@@ -50,20 +41,18 @@ button{
   border:none;
   border-radius:8px;
   cursor:pointer;
-  font-size:14px;
 }
-.btn-main{background:var(--blue);color:#fff}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-gray{background:var(--gray);color:#fff}
+.main{background:#0b3c88;color:#fff}
+.danger{background:#c0392b;color:#fff}
+.gray{background:#7f8c8d;color:#fff}
 .hidden{display:none}
-
 .order{
   border:1px solid #eee;
   border-radius:10px;
   padding:12px;
   margin-bottom:10px;
 }
-.order-header{
+.orderHeader{
   display:flex;
   justify-content:space-between;
   cursor:pointer;
@@ -76,22 +65,14 @@ button{
   border-radius:8px;
 }
 .totalBox{
-  background:linear-gradient(135deg,#0b3c88,#1e5fd1);
+  background:#0b3c88;
   color:#fff;
   padding:20px;
-  border-radius:16px;
+  border-radius:14px;
 }
 .loginBox{
   max-width:400px;
   margin:120px auto;
-}
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-}
-@media(max-width:900px){
-  .grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -103,28 +84,26 @@ button{
 <div class="card loginBox" id="loginBox">
   <h3>تسجيل الدخول</h3>
   <input type="password" id="password" placeholder="كلمة المرور">
-  <button class="btn-main" onclick="login()">دخول</button>
+  <button class="main" onclick="login()">دخول</button>
 </div>
 
 <div class="container hidden" id="app">
 
-<div class="grid">
 <div class="card">
-  <h3>إضافة / تعديل أوردر</h3>
+  <h3>إضافة أوردر</h3>
   <input id="customer" placeholder="اسم العميل">
   <input id="phone" placeholder="رقم الموبايل">
   <input id="product" placeholder="المنتج">
   <input id="price" type="number" placeholder="سعر المنتج">
   <input id="shipping" type="number" placeholder="الشحن">
-  <input id="install" type="number" placeholder="خدمة التركيب">
+  <input id="install" type="number" placeholder="التركيب">
   <input id="discount" type="number" placeholder="خصم">
-  <button class="btn-main" onclick="saveOrder()">حفظ الأوردر</button>
+  <button class="main" onclick="saveOrder()">حفظ الأوردر</button>
 </div>
 
 <div class="card">
   <h3>بحث برقم الموبايل</h3>
   <input id="search" placeholder="اكتب رقم الموبايل" oninput="renderOrders()">
-</div>
 </div>
 
 <div class="card">
@@ -146,6 +125,7 @@ const app=document.getElementById("app");
 const password=document.getElementById("password");
 const ordersDiv=document.getElementById("orders");
 const search=document.getElementById("search");
+const totalSales=document.getElementById("totalSales");
 
 const customer=document.getElementById("customer");
 const phone=document.getElementById("phone");
@@ -154,7 +134,6 @@ const price=document.getElementById("price");
 const shipping=document.getElementById("shipping");
 const install=document.getElementById("install");
 const discount=document.getElementById("discount");
-const totalSales=document.getElementById("totalSales");
 
 let orders=JSON.parse(localStorage.getItem("orders")||"[]");
 let editIndex=null;
@@ -164,11 +143,7 @@ function login(){
     loginBox.classList.add("hidden");
     app.classList.remove("hidden");
     renderOrders();
-  } else alert("كلمة المرور خطأ");
-}
-
-function generateId(){
-  return "ORD-"+Date.now();
+  }else alert("كلمة المرور خطأ");
 }
 
 function saveOrder(){
@@ -179,7 +154,7 @@ function saveOrder(){
     (+discount.value||0);
 
   const data={
-    id:editIndex===null?generateId():orders[editIndex].id,
+    id:"ORD-"+Date.now(),
     customer:customer.value,
     phone:phone.value,
     product:product.value,
@@ -190,78 +165,55 @@ function saveOrder(){
     total
   };
 
-  if(editIndex===null) orders.push(data);
-  else orders[editIndex]=data,editIndex=null;
-
+  orders.push(data);
   localStorage.setItem("orders",JSON.stringify(orders));
-  clearForm();renderOrders();
+  clearForm();
+  renderOrders();
 }
 
 function clearForm(){
-  customer.value=phone.value=product.value=
-  price.value=shipping.value=install.value=discount.value="";
+  customer.value="";
+  phone.value="";
+  product.value="";
+  price.value="";
+  shipping.value="";
+  install.value="";
+  discount.value="";
 }
 
 function renderOrders(){
   ordersDiv.innerHTML="";
   let sum=0;
-  const q=search.value.trim();
+  const q=search.value||"";
 
   orders.filter(o=>o.phone.includes(q)).forEach((o,i)=>{
     sum+=o.total;
-    ordersDiv.innerHTML+=`
-    <div class="order">
-      <div class="order-header" onclick="toggle(${i})">
-        <span>${o.customer} - ${o.total}</span>
-        <span>${o.id}</span>
-      </div>
-      <div class="details hidden" id="d${i}">
-        <p>📦 المنتج: ${o.product}</p>
-        <p>💰 السعر: ${o.price}</p>
-        <p>🚚 الشحن: ${o.shipping}</p>
-        <p>🛠 التركيب: ${o.install}</p>
-        <p>➖ الخصم: ${o.discount}</p>
-        <p><b>الإجمالي: ${o.total}</b></p>
-        <button class="btn-gray" onclick="edit(${i});event.stopPropagation()">تعديل</button>
-        <button class="btn-danger" onclick="del(${i});event.stopPropagation()">حذف</button>
-        <button class="btn-main" onclick="invoice(${i});event.stopPropagation()">فاتورة</button>
-      </div>
-    </div>`;
+    ordersDiv.innerHTML+=
+      '<div class="order">'+
+      '<div class="orderHeader" onclick="toggle('+i+')">'+
+      '<span>'+o.customer+' - '+o.total+'</span>'+
+      '<span>'+o.id+'</span>'+
+      '</div>'+
+      '<div class="details hidden" id="d'+i+'">'+
+      '<p>المنتج: '+o.product+'</p>'+
+      '<p>الإجمالي: '+o.total+'</p>'+
+      '<button class="danger" onclick="del('+i+')">حذف</button>'+
+      '</div></div>';
   });
 
   totalSales.innerText=sum;
 }
 
-function toggle(i){document.getElementById("d"+i).classList.toggle("hidden")}
-function edit(i){
-  const o=orders[i];editIndex=i;
-  customer.value=o.customer;
-  phone.value=o.phone;
-  product.value=o.product;
-  price.value=o.price;
-  shipping.value=o.shipping;
-  install.value=o.install;
-  discount.value=o.discount;
+function toggle(i){
+  document.getElementById("d"+i).classList.toggle("hidden");
 }
+
 function del(i){
-  if(confirm("حذف؟")){
+  if(confirm("حذف الأوردر؟")){
     orders.splice(i,1);
     localStorage.setItem("orders",JSON.stringify(orders));
     renderOrders();
   }
-}
-function invoice(i){
-  const o=orders[i];
-  const w=window.open("");
-  w.document.write(`
-    <h2>MT FACTORY</h2>
-    <p>Order ID: ${o.id}</p>
-    <p>Client: ${o.customer}</p>
-    <hr>
-    <p>Product: ${o.product}</p>
-    <p>Total: ${o.total}</p>
-    <script>window.print()</script>
-  `);
 }
 </script>
 
