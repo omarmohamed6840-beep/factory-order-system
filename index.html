@@ -2,12 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>MT FACTORY - Order System</title>
+<title>MT FACTORY - نظام الأوردرات</title>
 <style>
 body{font-family:Arial;background:#f4f6f9;margin:0}
 header{background:#0b3c88;color:#fff;padding:15px;text-align:center}
 .box{background:#fff;margin:20px;padding:20px;border-radius:8px}
-input,select,button{padding:8px;margin:5px;width:100%}
+input,button{padding:8px;margin:5px;width:100%}
 button{background:#0b3c88;color:#fff;border:none;cursor:pointer}
 .order{border-bottom:1px solid #ddd;padding:10px}
 .hidden{display:none}
@@ -21,28 +21,22 @@ button{background:#0b3c88;color:#fff;border:none;cursor:pointer}
 <h2>MT FACTORY</h2>
 </header>
 
+<!-- LOGIN -->
 <div class="box" id="loginBox">
 <h3>تسجيل الدخول</h3>
 <input type="password" id="password" placeholder="كلمة المرور">
 <button onclick="login()">دخول</button>
 </div>
 
+<!-- APP -->
 <div class="box hidden" id="app">
 
 <h3>إضافة أوردر</h3>
 <input id="customer" placeholder="اسم العميل">
 <input id="phone" placeholder="رقم الموبايل">
 <input id="address" placeholder="العنوان">
-<input id="product" placeholder="اسم المنتج">
-<input id="cost" type="number" placeholder="التكلفة">
+<input id="product" placeholder="المنتج">
 <input id="price" type="number" placeholder="السعر">
-
-<select id="status">
-<option>Design</option>
-<option>Laser</option>
-<option>Shipping</option>
-<option>Shipped</option>
-</select>
 
 <button onclick="addOrder()">حفظ الأوردر</button>
 
@@ -69,10 +63,9 @@ button{background:#0b3c88;color:#fff;border:none;cursor:pointer}
 
 <h3>الإجماليات</h3>
 <div class="totalBox">
-<p>إجمالي المبيعات: <b><span id="totalSales">0</span></b></p>
-<p>إجمالي التكاليف: <b><span id="totalCosts">0</span></b></p>
+<p>إجمالي الأوردرات: <b><span id="totalSales">0</span></b></p>
 <p>إجمالي المصروفات: <b><span id="totalExpenses">0</span></b></p>
-<p>صافي الربح: <b><span id="netProfit">0</span></b></p>
+<p>الصافي بعد الخصم: <b><span id="netTotal">0</span></b></p>
 </div>
 
 </div>
@@ -107,10 +100,7 @@ function addOrder(){
     phone:phone.value,
     address:address.value,
     product:product.value,
-    cost:Number(cost.value),
-    price:Number(price.value),
-    profit:Number(price.value)-Number(cost.value),
-    status:status.value
+    price:Number(price.value)
   };
 
   orders.push(order);
@@ -124,12 +114,12 @@ function clearOrderForm(){
   phone.value="";
   address.value="";
   product.value="";
-  cost.value="";
   price.value="";
 }
 
 function addExpense(){
-  if(!expenseAmount.value||!expenseNote.value) return alert("اكتب المصروف");
+  if(!expenseNote.value||!expenseAmount.value)
+    return alert("اكتب المصروف");
 
   const exp={
     note:expenseNote.value,
@@ -146,24 +136,18 @@ function addExpense(){
 function renderOrders(){
   ordersDiv.innerHTML="";
   let sales=0;
-  let costs=0;
-
   const q=search.value.toLowerCase();
 
   orders.filter(o=>o.id.toLowerCase().includes(q)).forEach(o=>{
     sales+=o.price;
-    costs+=o.cost;
-
     ordersDiv.innerHTML+=`
     <div class="order">
       <b>${o.id}</b> - ${o.customer}<br>
-      ${o.product} | ${o.status}<br>
-      السعر: ${o.price} | التكلفة: ${o.cost}
+      ${o.product} | السعر: ${o.price}
     </div>`;
   });
 
   totalSales.innerText=sales;
-  totalCosts.innerText=costs;
   calculateNet();
 }
 
@@ -185,9 +169,8 @@ function renderExpenses(){
 
 function calculateNet(){
   const sales=Number(totalSales.innerText);
-  const costs=Number(totalCosts.innerText);
   const exp=Number(totalExpenses.innerText);
-  netProfit.innerText = sales - costs - exp;
+  netTotal.innerText = sales - exp;
 }
 </script>
 
